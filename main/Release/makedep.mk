@@ -10,6 +10,8 @@ conductivity.c
 
 eeprom.c
 
+error.c
+
 glcd.c
 
 gpio.c

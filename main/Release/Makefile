@@ -39,6 +39,7 @@ C_SRCS +=  \
 ../buttons.c \
 ../conductivity.c \
 ../eeprom.c \
+../error.c \
 ../glcd.c \
 ../gpio.c \
 ../main.c \
@@ -62,6 +63,7 @@ ADC.o \
 buttons.o \
 conductivity.o \
 eeprom.o \
+error.o \
 glcd.o \
 gpio.o \
 main.o \
@@ -79,6 +81,7 @@ ADC.o \
 buttons.o \
 conductivity.o \
 eeprom.o \
+error.o \
 glcd.o \
 gpio.o \
 main.o \
@@ -96,6 +99,7 @@ ADC.d \
 buttons.d \
 conductivity.d \
 eeprom.d \
+error.d \
 glcd.d \
 gpio.d \
 main.d \
@@ -113,6 +117,7 @@ ADC.d \
 buttons.d \
 conductivity.d \
 eeprom.d \
+error.d \
 glcd.d \
 gpio.d \
 main.d \
@@ -134,6 +139,8 @@ ADDITIONAL_DEPENDENCIES:=
 OUTPUT_FILE_DEP:= ./makedep.mk
 
 # AVR32/GNU C Compiler
+
+
 
 
 

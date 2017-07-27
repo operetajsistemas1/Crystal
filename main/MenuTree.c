@@ -490,6 +490,7 @@ void MENU_Status(){
 					FILTER_Time_Left--;
 					GLCD_SetCursor(1,7,20);
 					GLCD_Printf("%u h   ",(FILTER_Time_Left/3600));	
+					
 				} else {
 					GLCD_SetCursor(1,7,20);
 					GLCD_Printf("0 h   ");	

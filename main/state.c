@@ -13,9 +13,11 @@ volatile STATES State = OFF;
 extern volatile RELAY_FLAGS Relay_Flags;
 extern volatile uint16_t Recirculation_Period;  //60 minutes
 extern volatile uint16_t Recirculation_Time;  //20 minutes
+const uint16_t ERROR = 5 * 60;  // check conductivity every 
 volatile uint16_t tank_pump_time;
 volatile uint32_t phase_timer;
 volatile uint32_t transition_timer;
+volatile uint32_t error_timer;
 
 void STATE_Init(){
 	GLCD_Clear();
@@ -117,6 +119,7 @@ void STATE_Set(){
 			Relay_Flags.Boost_Pump = 1;  //need to set RO pump here
 			Relay_Flags.Sterilization = 1; //Sterilization lamp
 			MENU_Status_Header();	
+			error_timer = ERROR;
 		break;
 		//case Rinsing:
 			//HC595_Clear_Output();	
@@ -131,6 +134,7 @@ void STATE_Set(){
 			Relay_Flags.Photoxidation = 1;		
 			MENU_Status_Header();
 			phase_timer = Recirculation_Time;	
+			error_timer = ERROR;
 		break;
 		case Dispensing:
 			HC595_Clear_Output();	

@@ -27,7 +27,7 @@
 #include "MenuTree.h"
 #include "eeprom.h"
 #include <util/atomic.h>
-
+#include "error.h"
 
 
 
@@ -51,6 +51,8 @@ volatile uint8_t Calibration_Available = 1;
 volatile uint8_t Calibration_Running = 0;
 extern volatile uint32_t phase_timer;
 extern volatile uint32_t transition_timer;
+extern volatile uint32_t error_timer;
+extern volatile uint8_t Error_Flag;
 
 int main(){
 
@@ -93,8 +95,12 @@ int main(){
 		if (ticker) {
 			if (phase_timer) phase_timer--;
 			if (transition_timer) transition_timer--;
+			if (error_timer) error_timer--;
 			ticker = 0;
 			STATE_Check();    //check state
+			if (Error_Flag) {
+				ERROR_Check();
+			}
 			if (!MENU_SCREEN) {
 				MENU_Status_Header2();    
 				MENU_Status();
