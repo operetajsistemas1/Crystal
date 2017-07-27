@@ -520,7 +520,16 @@ void MENU_Status(){
 				
 			} else {
 				volatile uint32_t conductivity =  COND_Get_US();	
-				printf("%d",conductivity );	
+			//	printf("%d",conductivity );	
+				if (Conductivity.Current_Grade == 1){
+					GLCD_SetCursor(0,3,10);
+					GLCD_DisplayChar(1);	
+					printf("grade 1");	
+				} else {
+					GLCD_SetCursor(0,3,10);
+					GLCD_DisplayChar(2);	
+					printf("grade 2");	
+				}
 				if (conductivity > 9999) conductivity = 9999;		
 				if (conductivity < 55) conductivity = 55;				
 				GLCD_SetCursor(0,2,52);
@@ -582,7 +591,7 @@ void MENU_Status_Header(){
 		break;
 		case Dispensing:
 			GLCD_GoToLine(0);
-		 	GLCD_DisplayString(LCD_Running);
+		 	GLCD_DisplayString(LCD_Dispensing);
 
 		
 		break;

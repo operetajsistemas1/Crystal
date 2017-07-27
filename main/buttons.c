@@ -13,6 +13,7 @@
 #include "state.h"
 #include "glcd.h"
 #include "MenuTree.h"
+#include "config.h"
 
 extern volatile STATES State;
 extern volatile COND  Conductivity;
@@ -99,15 +100,22 @@ void BTN_Check(){
 		break; 
 
 		case PUMPOUT  :
-			printf("%d 3  \r\n",active_buttons); 
+			//printf("%d 3  \r\n",active_buttons); 
 #ifdef _ULTRAPURE
-			if (Screen == ~MENU){
-				State = Dispensing;
-				STATE_Set();
+			 //   printf("ultrapure \r\n"); 
+			if (!MENU_SCREEN){
+			  //  printf("dispensing \r\n"); 
+				if (State == Dispensing) {
+					State = StandBy;
+					STATE_Set();					
+				} else {
+					State = Dispensing;
+					STATE_Set();
+				}				
 			}
 #endif //_ULTRAPURE			
 #ifdef _PURE
-			if (Screen == ~MENU){
+			if (!MENU_SCREEN){
 				State = PUMPOUT;
 				STATE_Set();
 			}

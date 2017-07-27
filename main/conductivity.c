@@ -66,7 +66,7 @@ ISR(INT1_vect) // grade 1
 			} else {
 				dirty_water_counter++;
 				if (dirty_water_counter > 100){
-					printf("Dirty water [%"PRIu8"] \r\n",dirty_water_counter);
+				//	printf("Dirty water [%"PRIu8"] \r\n",dirty_water_counter);
 					dirty_water_counter = 0;
 					Conductivity.Grade1 = 0;
 				}
@@ -86,7 +86,7 @@ ISR(INT0_vect) // grade 2
 			} else {
 				dirty_water_counter++;
 				if (dirty_water_counter > 100){
-					printf("Dirty water [%"PRIu8"] \r\n",dirty_water_counter);
+				//	printf("Dirty water [%"PRIu8"] \r\n",dirty_water_counter);
 					dirty_water_counter = 0;
 					Conductivity.Grade2 = 0;
 				}
@@ -110,7 +110,7 @@ void COND_Set_Grade2(){
 }
 
 uint32_t COND_Get_Kohm(){
-		printf("G1_out %"PRIu16"  \r\n",Conductivity.Grade1);		
+//		printf("G1_out %"PRIu16"  \r\n",Conductivity.Grade1);		
 //	printf("Cur_grade %d \r\n",Conductivity.Current_Grade);	
 	if (Conductivity.Current_Grade == 1){		
 		float resist  = (float)Conductivity.Grade1 * GRADE1_SLOPE + GRADE1_OFFSET;	

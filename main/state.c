@@ -11,14 +11,11 @@
 
 volatile STATES State = OFF;
 extern volatile RELAY_FLAGS Relay_Flags;
-const uint32_t minute = 60;    //seconds in minute
-const uint32_t recirculation = 30 * minute; // rinsing(fixed 30 sec)
-const uint32_t oxidising_time_limit = 1 * minute; // 1 min oxidizing(fixed 1min)
-const uint32_t measure_toc_time_limit = 1 * minute; // TOC measurement time(max 1min, or peak detected)
-const uint32_t predispense_time_limit = 3 * minute; // delay when starting dispense from standby
-const uint32_t tank_pump_limit = 4 * minute; // limit tank pump operation to 4 minutes
 extern volatile uint16_t Recirculation_Period;  //60 minutes
 extern volatile uint16_t Recirculation_Time;  //20 minutes
+volatile uint16_t tank_pump_time;
+volatile uint32_t phase_timer;
+volatile uint32_t transition_timer;
 
 void STATE_Init(){
 	GLCD_Clear();
@@ -53,16 +50,22 @@ void STATE_Check(){
 				State = LowPress; 
 				STATE_Set();
 			}
-			//check timers
+			if (!phase_timer) {
+				State = Recirculation;
+				STATE_Set();
+			}
 		break;
 		case Recirculation:
-			//check timers
+			if (!phase_timer) {
+				State = StandBy;
+				STATE_Set();
+			}
 		break;
-		case Rinsing:
-			//check timers
-		break;
+		//case Rinsing:
+			////check timers
+		//break;
 		case Dispensing:
-			
+	//		printf(" state dispensing \r\n"); 	
 		break;
 		case LowPress:
 			if (!Low_Pressure()){
@@ -78,7 +81,10 @@ void STATE_Check(){
 			}			
 		break;		
 		case TankPump:
-
+			if (!phase_timer){
+				State = StandBy;
+				STATE_Set();
+			}
 		break;		
 		default:
 		
@@ -105,31 +111,33 @@ void STATE_Set(){
 
 		break;		
 		case Running:
+			phase_timer = Recirculation_Period -Recirculation_Time;
 			HC595_Clear_Output();	
 			Relay_Flags.Input_Valve = 1;   // inpu valve
 			Relay_Flags.Boost_Pump = 1;  //need to set RO pump here
 			Relay_Flags.Sterilization = 1; //Sterilization lamp
 			MENU_Status_Header();	
 		break;
-		case Rinsing:
-			HC595_Clear_Output();	
-			Relay_Flags.Rec_Pump = 1;
-			Relay_Flags.Photoxidation = 1;		
-			MENU_Status_Header();	
-			// set timers
-		break;		
+		//case Rinsing:
+			//HC595_Clear_Output();	
+			//Relay_Flags.Rec_Pump = 1;
+			//Relay_Flags.Photoxidation = 1;		
+			//MENU_Status_Header();	
+			//// set timers
+		//break;		
 		case Recirculation:
 			HC595_Clear_Output();	
 			Relay_Flags.Rec_Pump = 1;
 			Relay_Flags.Photoxidation = 1;		
-			MENU_Status_Header();	
-			//set timers	
+			MENU_Status_Header();
+			phase_timer = Recirculation_Time;	
 		break;
 		case Dispensing:
 			HC595_Clear_Output();	
 			Relay_Flags.Rec_Pump = 1;		
 			Relay_Flags.Dispense_Valve = 1;
-			MENU_Status_Header();		
+			MENU_Status_Header();	
+		//	printf("set state dispensing \r\n"); 	
 		break;
 		case LowPress:
 			HC595_Clear_Output();	
@@ -144,6 +152,7 @@ void STATE_Set(){
 			HC595_Clear_Output();	
 			Relay_Flags.Tank_Pump = 10;				
 			MENU_Status_Header();
+			phase_timer = tank_pump_time;
 		break;		
 		default:
 		

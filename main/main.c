@@ -49,7 +49,8 @@ volatile uint8_t Use_MOhm = 1;
 extern volatile uint16_t timer_temp;
 volatile uint8_t Calibration_Available = 1;
 volatile uint8_t Calibration_Running = 0;
-
+extern volatile uint32_t phase_timer;
+extern volatile uint32_t transition_timer;
 
 int main(){
 
@@ -90,6 +91,8 @@ int main(){
 		BTN_Check(); //Check button input
 		//this will happen every second
 		if (ticker) {
+			if (phase_timer) phase_timer--;
+			if (transition_timer) transition_timer--;
 			ticker = 0;
 			STATE_Check();    //check state
 			if (!MENU_SCREEN) {

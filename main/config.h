@@ -14,4 +14,5 @@
 #define FALSE 0
 #define DEBUGG
 
+#define _ULTRAPURE
 #endif /* CONFIG_H_ */
