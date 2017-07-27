@@ -15,6 +15,7 @@
 #include "eeprom.h"
 #include "buttons.h"
 #include "temperature.h"
+#include "Conductivity.h"
 
 char LCD_Crystal[10] = {'C','r','y','s','t','a','l',' ',' ',0};
 char LCD_Running[10] = {'R','u','n','n','i','n','g',' ',' ',0};
@@ -40,6 +41,8 @@ extern volatile uint16_t Recirculation_Time;  //20 minutes
 extern volatile BTN buttons;
 extern volatile uint8_t Calibration_Running;
 extern volatile TEMPERATURE temperature;
+extern volatile COND  Conductivity;
+
 
 extern tree_node resetfilter;
 tree_node reset = {
@@ -492,16 +495,63 @@ void MENU_Status(){
 					GLCD_Printf("0 h   ");	
 					//display error about changing filter
 				}	
-			GLCD_SetCursor(0,2,52);
-			GLCD_DisplayChar32(10);
-			GLCD_SetCursor(0,2,41);
-			GLCD_DisplayChar32(0);		 
-			GLCD_SetCursor(1,2,0);
-			GLCD_DisplayChar32(0);			
-			GLCD_SetCursor(1,2,16);
-			GLCD_DisplayChar32(5);
-			GLCD_SetCursor(1,2,32);
-			GLCD_DisplayChar32(5);		
+			if (COND_Units == 1){
+				volatile uint32_t resistivity =  COND_Get_Kohm();
+				if (resistivity > 18200) resistivity = 18200;		
+				if (resistivity < 1000) resistivity = 1000;					
+				GLCD_SetCursor(1,2,16);
+				GLCD_DisplayChar32(10);	
+				uint8_t digit = resistivity / 10000;
+				resistivity = resistivity % 10000;	
+				if (digit) {
+					GLCD_SetCursor(0,2,52);
+					GLCD_DisplayChar32(digit);	
+				}		
+				digit = resistivity / 1000;
+				resistivity = resistivity % 1000;
+				GLCD_SetCursor(1,2,0);
+				GLCD_DisplayChar32(digit);
+				digit = resistivity / 100;
+				resistivity = resistivity % 100;
+				GLCD_SetCursor(1,2,32);
+				GLCD_DisplayChar32(digit);				
+				
+										
+				
+			} else {
+				volatile uint32_t conductivity =  COND_Get_US();	
+				printf("%d",conductivity );	
+				if (conductivity > 9999) conductivity = 9999;		
+				if (conductivity < 55) conductivity = 55;				
+				GLCD_SetCursor(0,2,52);
+				GLCD_DisplayChar32(10);		
+				uint8_t digit = conductivity / 1000;
+				conductivity = conductivity % 1000;
+				GLCD_SetCursor(0,2,41);
+				GLCD_DisplayChar32(digit);				
+				digit = conductivity / 100;
+				conductivity = conductivity % 100;	
+				GLCD_SetCursor(1,2,0);
+				GLCD_DisplayChar32(digit);										
+				digit = conductivity / 10;
+				conductivity = conductivity % 10;				
+				GLCD_SetCursor(1,2,16);
+				GLCD_DisplayChar32(digit);				
+				digit = conductivity;			
+				GLCD_SetCursor(1,2,32);
+				GLCD_DisplayChar32(digit);						
+				
+			}			
+			//GLCD_SetCursor(0,2,52);
+			//GLCD_DisplayChar32(10);
+			//GLCD_SetCursor(0,2,41);
+			//GLCD_DisplayChar32(0);		 
+			//GLCD_SetCursor(1,2,0);
+			//GLCD_DisplayChar32(0);			
+			//GLCD_SetCursor(1,2,16);
+			//GLCD_DisplayChar32(6);
+			//GLCD_SetCursor(1,2,32);
+			//GLCD_DisplayChar32(5);		
 	
 }
 

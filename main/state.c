@@ -11,6 +11,14 @@
 
 volatile STATES State = OFF;
 extern volatile RELAY_FLAGS Relay_Flags;
+const uint32_t minute = 60;    //seconds in minute
+const uint32_t recirculation = 30 * minute; // rinsing(fixed 30 sec)
+const uint32_t oxidising_time_limit = 1 * minute; // 1 min oxidizing(fixed 1min)
+const uint32_t measure_toc_time_limit = 1 * minute; // TOC measurement time(max 1min, or peak detected)
+const uint32_t predispense_time_limit = 3 * minute; // delay when starting dispense from standby
+const uint32_t tank_pump_limit = 4 * minute; // limit tank pump operation to 4 minutes
+extern volatile uint16_t Recirculation_Period;  //60 minutes
+extern volatile uint16_t Recirculation_Time;  //20 minutes
 
 void STATE_Init(){
 	GLCD_Clear();
