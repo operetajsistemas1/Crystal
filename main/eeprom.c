@@ -48,11 +48,11 @@ void EEPROM_Write_Defaults(){
 	
 	eeprom_write_word(&BKP_Magic,0x0102);	
 	eeprom_write_byte(&BKP_Units,0);	
-	eeprom_write_word(&BKP_Filter,12200);	
+	eeprom_write_word(&BKP_Filter,FILTER_Time_Left/60);	
 	eeprom_write_float(&BKP_C_Offset,0);		
 	eeprom_write_float(&BKP_C_Slope,0.75);	
-	eeprom_write_byte(&BKP_Rec_Time,15);	
-	eeprom_write_byte(&BKP_Rec_Period,20);	
+	eeprom_write_byte(&BKP_Rec_Time,Recirculation_Time/60);	
+	eeprom_write_byte(&BKP_Rec_Period,Recirculation_Period/60);	
 }	
 
 void EEPROM_Write_Units(){

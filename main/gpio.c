@@ -16,6 +16,7 @@ GPIO_Init(){
 }
 
 char Low_Pressure(){
+//	printf ("LP: %d \r\n",PINB&(1<<5));
 	return (PINB&(1<<5));
 }
 

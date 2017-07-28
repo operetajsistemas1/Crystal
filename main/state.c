@@ -33,10 +33,12 @@ void STATE_Check(){
 			//do nothing
 		break;
 		case StandBy:
+					printf ("LP:stendby state check \r\n");
 			if (Tank_Full()){
 				State = TankFull;
 				STATE_Set();
 			} else if (Low_Pressure()){
+								printf ("LP: standby state check \r\n");
 				State = LowPress;
 				STATE_Set();
 			} else {
@@ -45,10 +47,12 @@ void STATE_Check(){
 			}			
 		break;		
 		case Running:
+			printf ("LP:running state check \r\n");
 			if (Tank_Full()){
 				State = TankFull; 
 				STATE_Set();
 			} else if (Low_Pressure()){
+				printf ("LP: running state check \r\n");
 				State = LowPress; 
 				STATE_Set();
 			}
@@ -70,7 +74,9 @@ void STATE_Check(){
 	//		printf(" state dispensing \r\n"); 	
 		break;
 		case LowPress:
+			printf ("LP:lowpress state check \r\n");
 			if (!Low_Pressure()){
+				printf ("LP: low press state check \r\n");
 				State = Running;			
 				STATE_Set();
 			}		

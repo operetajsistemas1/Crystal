@@ -70,6 +70,7 @@ int main(){
 	STATE_Init();
 	EEPROM_Init();
 	HC595_Write(Relay_Flags.flags);	
+	GPIO_Init();
 	
 	
 	/*

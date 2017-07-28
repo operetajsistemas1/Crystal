@@ -525,11 +525,11 @@ void MENU_Status(){
 				if (Conductivity.Current_Grade == 1){
 					GLCD_SetCursor(0,3,10);
 					GLCD_DisplayChar(1);	
-					printf("grade 1");	
+			//		printf("grade 1");	
 				} else {
 					GLCD_SetCursor(0,3,10);
 					GLCD_DisplayChar(2);	
-					printf("grade 2");	
+				//	printf("grade 2");	
 				}
 				if (conductivity > 9999) conductivity = 9999;		
 				if (conductivity < 55) conductivity = 55;				
@@ -617,11 +617,12 @@ void MENU_Status_Header(){
 }
 
 void MENU_Status_Header2(){
+			//	printf ("LP: status header before \r\n");
 			if (Tank_Full()){
 				GLCD_SetCursor(1,0,18);
 		 		GLCD_DisplayString(LCD_TankFull);
-			
 			} else if (Low_Pressure() && (State!= OFF)){
+		//		printf ("LP: status header2 \r\n");
 				State = LowPress; 
 				GLCD_SetCursor(1,0,18);
 		 		GLCD_DisplayString(LCD_LowPressure);	
