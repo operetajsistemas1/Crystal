@@ -46,91 +46,91 @@ extern volatile COND  Conductivity;
 
 extern tree_node resetfilter;
 tree_node reset = {
-    .parent = &resetfilter,
-    .text = "Reset\0",
-    .selected = 1,
-    .child =
-    { NULL, NULL, NULL, NULL, NULL}
+	.parent = &resetfilter,
+	.text = "Reset\0",
+	.selected = 1,
+	.child =
+	{ NULL, NULL, NULL, NULL, NULL}
 };
 
 
 // third and last level nodes, we have to define behaviour on last press
 extern tree_node units;
 tree_node usiemens = {
-    .parent = &units,
-    .text = "uS\0",
-    .selected = 1,
-    .child =
-    { NULL, NULL, NULL, NULL, NULL}
+	.parent = &units,
+	.text = "uS\0",
+	.selected = 1,
+	.child =
+	{ NULL, NULL, NULL, NULL, NULL}
 };
 tree_node mohm = {
-    .parent = &units,
-    .text = "MOhm\0",
-    .selected = 0,
-    .child =
-    { NULL, NULL, NULL, NULL, NULL}
+	.parent = &units,
+	.text = "MOhm\0",
+	.selected = 0,
+	.child =
+	{ NULL, NULL, NULL, NULL, NULL}
 };
 
 
 
 extern tree_node params;
 tree_node recper = {
-    .parent = &params,
-    .text = "Recirculation period\0",
-    .selected = 1,
-    .child =
-    { NULL, NULL, NULL, NULL, NULL}
+	.parent = &params,
+	.text = "Recirculation period\0",
+	.selected = 1,
+	.child =
+	{ NULL, NULL, NULL, NULL, NULL}
 };
 tree_node rectime = {
-    .parent = &params,
-    .text = "Recirculation time\0",
-    .selected = 0,
-    .child =
-    { NULL, NULL, NULL, NULL, NULL}
+	.parent = &params,
+	.text = "Recirculation time\0",
+	.selected = 0,
+	.child =
+	{ NULL, NULL, NULL, NULL, NULL}
 };
 tree_node units = {
-    .parent = &params,
-    .text = "Measurement units\0",
-    .selected = 0,
-    .child =
-    { &usiemens, &mohm, NULL, NULL, NULL}
+	.parent = &params,
+	.text = "Measurement units\0",
+	.selected = 0,
+	.child =
+	{ &usiemens, &mohm, NULL, NULL, NULL}
 };
 
 
 
 extern tree_node parent; // define that we will have such parent reference
 tree_node params = {
-    .parent = &parent,
-    .text = "Options \0",
-    .selected = 0,
-    .child =
-    { &units, &recper, &rectime, NULL}//  { &units, &timedate, &recirc, &logint, NULL}
+	.parent = &parent,
+	.text = "Options \0",
+	.selected = 0,
+	.child =
+	{ &units, &recper, &rectime, NULL}//  { &units, &timedate, &recirc, &logint, NULL}
 };
 
 
 tree_node resetfilter = {
-    .parent = &parent,
-    .text = "Reset filter counter \0",
-    .selected = 0,
-    .child =
-    { &reset, NULL, NULL, NULL, NULL}
+	.parent = &parent,
+	.text = "Reset filter counter \0",
+	.selected = 0,
+	.child =
+	{ &reset, NULL, NULL, NULL, NULL}
 };
 
 
 tree_node parent = {
-    .parent = NULL,
-    .text = "Main menu \0",
-    .selected = 0,
-    .child =
-    {&resetfilter, &params, 0, 0, 0} //{ &voldis, &params, &clerr, &sval, &resetfilter} //{ &voldis, &params, &clerr, &sval, &service}
+	.parent = NULL,
+	.text = "Main menu \0",
+	.selected = 0,
+	.child =
+	{&resetfilter, &params, 0, 0, 0} //{ &voldis, &params, &clerr, &sval, &resetfilter} //{ &voldis, &params, &clerr, &sval, &service}
 };
 
 tree_node calibrate = {
-    .parent = NULL,
-    .text = "Calibrate Temperature",
-    .selected = 1,
-    .child =
-    { NULL, NULL, NULL, NULL, NULL}
+	.parent = NULL,
+	.text = "Calibrate Temperature",
+	.selected = 1,
+	.child =
+	{ NULL, NULL, NULL, NULL, NULL}
 };
 
 
@@ -495,11 +495,29 @@ void MENU_Status(){
 					GLCD_SetCursor(1,7,20);
 					GLCD_Printf("0 h   ");	
 					//display error about changing filter
-				}	
+				}
+			if (!Conductivity.Overflow)	{
 			if (COND_Units == 1){
 				volatile uint32_t resistivity =  COND_Get_Kohm();
+				if (Conductivity.Current_Grade == 1){
+					GLCD_SetCursor(0,3,33);
+					GLCD_DisplayChar('1');	
+					GLCD_SetCursor(0,4,30);
+					GLCD_DisplayChar(' ');	
+				//	printf("grade 1");	
+				} else {
+					GLCD_SetCursor(0,3,33);
+					GLCD_DisplayChar(' ');	
+					GLCD_SetCursor(0,4,30);
+					GLCD_DisplayChar('2');	
+				//	printf("grade 2");	
+				}
 				if (resistivity > 18200) resistivity = 18200;		
-				if (resistivity < 1000) resistivity = 1000;					
+				if (resistivity < 1000) {
+					resistivity = 1000;		
+					GLCD_SetCursor(0,2,41);
+					GLCD_DisplayChar32(14);	  // change back to digit		
+				}			
 				GLCD_SetCursor(1,2,16);
 				GLCD_DisplayChar32(10);	
 				uint8_t digit = resistivity / 10000;
@@ -523,22 +541,30 @@ void MENU_Status(){
 				volatile uint32_t conductivity =  COND_Get_US();	
 			//	printf("%d",conductivity );	
 				if (Conductivity.Current_Grade == 1){
-					GLCD_SetCursor(0,3,10);
-					GLCD_DisplayChar(1);	
-			//		printf("grade 1");	
+					GLCD_SetCursor(0,3,33);
+					GLCD_DisplayChar('1');	
+					GLCD_SetCursor(0,4,30);
+					GLCD_DisplayChar(' ');	
+				//	printf("grade 1");	
 				} else {
-					GLCD_SetCursor(0,3,10);
-					GLCD_DisplayChar(2);	
+					GLCD_SetCursor(0,3,33);
+					GLCD_DisplayChar(' ');	
+					GLCD_SetCursor(0,4,30);
+					GLCD_DisplayChar('2');	
 				//	printf("grade 2");	
 				}
-				if (conductivity > 9999) conductivity = 9999;		
+				if (conductivity > 9999) {
+					conductivity = 9999;	
+					GLCD_SetCursor(0,2,30);
+					GLCD_DisplayChar32(13);	  // change back to digit							
+					}	
 				if (conductivity < 55) conductivity = 55;				
 				GLCD_SetCursor(0,2,52);
 				GLCD_DisplayChar32(10);		
 				uint8_t digit = conductivity / 1000;
 				conductivity = conductivity % 1000;
 				GLCD_SetCursor(0,2,41);
-				GLCD_DisplayChar32(digit);				
+				GLCD_DisplayChar32(digit);	  // change back to digit			
 				digit = conductivity / 100;
 				conductivity = conductivity % 100;	
 				GLCD_SetCursor(1,2,0);
@@ -551,6 +577,18 @@ void MENU_Status(){
 				GLCD_SetCursor(1,2,32);
 				GLCD_DisplayChar32(digit);						
 				
+			} 
+			}else {
+				GLCD_SetCursor(1,2,32);
+				GLCD_DisplayChar32(15);	
+				GLCD_SetCursor(1,2,16);
+				GLCD_DisplayChar32(15);	
+				GLCD_SetCursor(1,2,0);
+				GLCD_DisplayChar32(15);			
+				GLCD_SetCursor(0,2,50);	
+				GLCD_DisplayChar32(16);			
+				GLCD_SetCursor(0,2,39);	
+				GLCD_DisplayChar32(16);	//white space				
 			}			
 			//GLCD_SetCursor(0,2,52);
 			//GLCD_DisplayChar32(10);
@@ -568,45 +606,45 @@ void MENU_Status(){
 void MENU_Status_Header(){
 	switch (State){
 		case OFF:
-		 	GLCD_GoToLine(0);
-		 	GLCD_DisplayString(LCD_OFF);
+			GLCD_GoToLine(0);
+			GLCD_DisplayString(LCD_OFF);
 
 		break;
 		case StandBy:
 			GLCD_GoToLine(0);
-		 	GLCD_DisplayString(LCD_StandBy);
+			GLCD_DisplayString(LCD_StandBy);
 
 		
 		break;		
 		case Running:
 			GLCD_GoToLine(0);
-		 	GLCD_DisplayString(LCD_Running);
+			GLCD_DisplayString(LCD_Running);
 		 
 
 		break;
 		case Recirculation:
 			GLCD_GoToLine(0);
-		 	GLCD_DisplayString(LCD_Recirc);
+			GLCD_DisplayString(LCD_Recirc);
 
 		
 		break;
 		case Dispensing:
 			GLCD_GoToLine(0);
-		 	GLCD_DisplayString(LCD_Dispensing);
+			GLCD_DisplayString(LCD_Dispensing);
 
 		
 		break;
 		case LowPress:
 			GLCD_GoToLine(0);
-		 	GLCD_DisplayString(LCD_StandBy);		
+			GLCD_DisplayString(LCD_StandBy);		
 		break;
 		case TankFull:
 			GLCD_GoToLine(0);
-		 	GLCD_DisplayString(LCD_StandBy);
+			GLCD_DisplayString(LCD_StandBy);
 		break;	
 		case TankPump:
 			GLCD_GoToLine(0);
-		 	GLCD_DisplayString(LCD_TankPump);
+			GLCD_DisplayString(LCD_TankPump);
 		break;		
 		default:
 		
@@ -620,16 +658,16 @@ void MENU_Status_Header2(){
 			//	printf ("LP: status header before \r\n");
 			if (Tank_Full()){
 				GLCD_SetCursor(1,0,18);
-		 		GLCD_DisplayString(LCD_TankFull);
+				GLCD_DisplayString(LCD_TankFull);
 			} else if (Low_Pressure() && (State!= OFF)){
 		//		printf ("LP: status header2 \r\n");
 				State = LowPress; 
 				GLCD_SetCursor(1,0,18);
-		 		GLCD_DisplayString(LCD_LowPressure);	
+				GLCD_DisplayString(LCD_LowPressure);	
 		
 			} else {
 				GLCD_SetCursor(1,0,18);
-		 		GLCD_DisplayString(LCD_Blank);					
+				GLCD_DisplayString(LCD_Blank);					
 			}
 			if (COND_Units) {
 				GLCD_ShowMOhm();	

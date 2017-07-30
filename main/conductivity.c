@@ -47,8 +47,8 @@ void COND_Init(void){
 
 
 ISR(TIMER1_OVF_vect){
-
-	printf("Timer overflow [%"PRIu32"] \r\n",timer2_counter);
+	Conductivity.Overflow = TRUE;
+	//printf("Timer overflow [%"PRIu32"] \r\n",timer2_counter);
 
 }
 
@@ -72,6 +72,7 @@ ISR(INT1_vect) // grade 1
 				}
 			}
 		}
+		Conductivity.Overflow = FALSE;
 	GIFR |= (1<<INT1); // reset interrupt if it got set already
 }	
 
@@ -92,6 +93,7 @@ ISR(INT0_vect) // grade 2
 				}
 			}
 		}
+	Conductivity.Overflow = FALSE;
 	GIFR |= (1<<INT0); // reset interrupt if it got set already
 }	
 

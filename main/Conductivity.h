@@ -18,6 +18,7 @@ typedef struct {
 	uint16_t Offset_Grade1;
 	uint16_t Slope_Grade2;
 	uint16_t Offset_Grade2;
+	uint8_t Overflow;
 }COND;
 
 void COND_Init(void);
