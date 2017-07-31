@@ -16,7 +16,7 @@
 #include "buttons.h"
 #include "temperature.h"
 #include "Conductivity.h"
-
+#include "error.h"
 char LCD_Crystal[10] = {'C','r','y','s','t','a','l',' ',' ',0};
 char LCD_Running[10] = {'R','u','n','n','i','n','g',' ',' ',0};
 char LCD_OFF[10] = {'O','f','f',' ',' ',' ',' ',' ',' ',0};
@@ -28,7 +28,7 @@ char LCD_TankFull[10] = {'T','a','n','k','F','u','l','l',' ',0};
 char LCD_Blank[10] = {' ',' ',' ',' ',' ',' ',' ',' ',' ',0};
 char LCD_TankPump[10] = {'P','u','m','p',' ',' ',' ',' ',' ',0};
 uint16_t temper = 0;
-	
+extern volatile uint8_t Error_Flag;
 extern volatile STATES State;
 extern volatile uint8_t COND_Units;
 
@@ -490,12 +490,13 @@ void MENU_Status(){
 					FILTER_Time_Left--;
 					GLCD_SetCursor(1,7,20);
 					GLCD_Printf("%u h   ",(FILTER_Time_Left/3600));	
-					
+					EEPROM_Write_Filter();
 				} else {
 					GLCD_SetCursor(1,7,20);
 					GLCD_Printf("0 h   ");	
-					//display error about changing filter
+					Error_Flag |= (1 << Filter_Error);   //Ser DI error
 				}
+				
 			if (!Conductivity.Overflow)	{
 			if (COND_Units == 1){
 				volatile uint32_t resistivity =  COND_Get_Kohm();
@@ -513,8 +514,8 @@ void MENU_Status(){
 				//	printf("grade 2");	
 				}
 				if (resistivity > 18200) resistivity = 18200;		
-				if (resistivity < 1000) {
-					resistivity = 1000;		
+				if (resistivity < 100) {
+					resistivity = 100;		
 					GLCD_SetCursor(0,2,41);
 					GLCD_DisplayChar32(14);	  // change back to digit		
 				}			
@@ -528,7 +529,7 @@ void MENU_Status(){
 				}		
 				digit = resistivity / 1000;
 				resistivity = resistivity % 1000;
-				GLCD_SetCursor(1,2,0);
+				GLCD_SetCursor(1,2,3);
 				GLCD_DisplayChar32(digit);
 				digit = resistivity / 100;
 				resistivity = resistivity % 100;

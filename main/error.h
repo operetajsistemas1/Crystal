@@ -11,14 +11,13 @@
 
 
 typedef enum {
-	DI = 0,
-	Polishing = 1,
-	Filter = 2,
+	DI_Error = 0,
+	Polishing_Error = 1,
+	Filter_Error  = 2,
 }ERRORS;
 
 
 void ERROR_Check(void);
-
-
+void ERROR_Check_Grade(void);
 
 #endif /* ERROR_H_ */

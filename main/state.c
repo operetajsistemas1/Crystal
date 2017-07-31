@@ -8,12 +8,13 @@
 #include "glcd.h"
 #include "SNx4HC595.h"
 #include "MenuTree.h"
+#include "error.h"
 
 volatile STATES State = OFF;
 extern volatile RELAY_FLAGS Relay_Flags;
 extern volatile uint16_t Recirculation_Period;  //60 minutes
 extern volatile uint16_t Recirculation_Time;  //20 minutes
-const uint16_t ERROR = 5 * 60;  // check conductivity every 
+const uint16_t ERROR = 1 * 60;  // check conductivity every 
 volatile uint16_t tank_pump_time;
 volatile uint32_t phase_timer;
 volatile uint32_t transition_timer;
@@ -60,11 +61,17 @@ void STATE_Check(){
 				State = Recirculation;
 				STATE_Set();
 			}
+			if (!error_timer) {
+				ERROR_Check_Grade();
+			}
 		break;
 		case Recirculation:
 			if (!phase_timer) {
 				State = StandBy;
 				STATE_Set();
+			}
+			if (!error_timer) {
+				ERROR_Check_Grade();
 			}
 		break;
 		//case Rinsing:
@@ -126,14 +133,7 @@ void STATE_Set(){
 			Relay_Flags.Sterilization = 1; //Sterilization lamp
 			MENU_Status_Header();	
 			error_timer = ERROR;
-		break;
-		//case Rinsing:
-			//HC595_Clear_Output();	
-			//Relay_Flags.Rec_Pump = 1;
-			//Relay_Flags.Photoxidation = 1;		
-			//MENU_Status_Header();	
-			//// set timers
-		//break;		
+		break;		
 		case Recirculation:
 			HC595_Clear_Output();	
 			Relay_Flags.Rec_Pump = 1;
