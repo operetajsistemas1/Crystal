@@ -10,21 +10,28 @@
 
 extern volatile COND  Conductivity;
 volatile uint8_t Error_Flag = 0;
-
+const char LCD_Error[3][10] = {
+		{'D','I',' ','e','r','r',' ',' ',' ',0},
+		{'P','o','l','i','s','h','i','n','g',0},
+		{'F','i','l','t','e','r',' ',' ',' ',0}
+		};
+		
 void ERROR_Check(){
 	static uint8_t active_error = 0;
 	static error_cycle_timer = 0;
 	error_cycle_timer++;
 	if (error_cycle_timer > 5) {
-		for (uint8_t i = active_error; sizeof(uint8_t); i++ )
-			if (Error_Flag&&(1<<i)){
-				printf("error %d", i);
-				active_error = i;
-				
-			} else {
-				active_error = 0;
-			}
-	error_cycle_timer = 0;	
+		printf("Error_Flag  %"PRIu8"  \r\n",Error_Flag);
+		uint8_t i = ++active_error;
+		while (!(Error_Flag&(1<<i))) {
+			i++;
+			if (i>8) i = 0;
+		}		
+		printf("active error  %"PRIu8"  \r\n",i);
+		active_error = i;
+		GLCD_GoToLine(1);
+		GLCD_DisplayString(LCD_Error[i]);	
+		error_cycle_timer = 0;	
 	}
 }
 

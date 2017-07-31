@@ -16,7 +16,7 @@ uint8_t EEMEM BKP_Rec_Time;
 uint8_t EEMEM BKP_Rec_Period; 
 float EEMEM BKP_C_Offset;        
 float EEMEM BKP_C_Slope;   
-volatile uint32_t FILTER_Time_Left = 723600;
+volatile uint32_t FILTER_Time_Left =   60; //723600;
 extern volatile uint8_t COND_Units;
 extern volatile TEMPERATURE temperature;
 volatile uint16_t Recirculation_Period = 60 * 60;  //60 minutes
@@ -67,16 +67,16 @@ void EEPROM_Write_Temperature(){
 	eeprom_write_float(&BKP_C_Slope,temperature.slope);	
 }
 void EEPROM_Write_Rec_Time(){
-	eeprom_write_byte(&BKP_Rec_Time,Recirculation_Period/60);
+	eeprom_write_byte(&BKP_Rec_Time,Recirculation_Time/60);
 }
 void EEPROM_Write_Rec_Period(){
-	eeprom_write_byte(&BKP_Rec_Period,Recirculation_Time/60);
+	eeprom_write_byte(&BKP_Rec_Period,Recirculation_Period/60);
 }
 
 void EEPROM_Read_Rec_Period(){
-		Recirculation_Period = eeprom_read_byte(&BKP_Rec_Time) * 60;
+		Recirculation_Time = eeprom_read_byte(&BKP_Rec_Time) * 60;
 }		
 		
 void EEPROM_Read_Rec_Time(){		
-		Recirculation_Time = eeprom_read_byte(&BKP_Rec_Period) * 60;
+		Recirculation_Period = eeprom_read_byte(&BKP_Rec_Period) * 60;
 }

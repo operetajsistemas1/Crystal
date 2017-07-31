@@ -94,7 +94,7 @@ void BTN_Check(){
 			} else {
 				State = OFF;
 				STATE_Set();		
-				printf("off  \r\n");		
+				//printf("off  \r\n");		
 			}
 
 		break; 
@@ -124,7 +124,7 @@ void BTN_Check(){
 		break; 
 				
 		case MENU  :
-			printf("%d 4  \r\n",active_buttons); 
+			//printf("%d 4  \r\n",active_buttons); 
 			if (MENU_SCREEN){
 				MENU_Out();
 			} else {

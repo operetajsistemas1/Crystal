@@ -21,7 +21,7 @@ const float GRADE2_SLOPE = 0.30501f;
 volatile uint16_t timer2_counter = 0;
 volatile COND  Conductivity ={.Current_Grade = 1, .Timer_Reset_Pending=1, .Grade1 = 6271000, .Grade2 = 6271000, .Overflow = 1};
 volatile uint16_t timer_temp;
-volatile uint8_t COND_Units = 1;
+volatile uint8_t COND_Units = 0;
 volatile uint8_t dirty_water_counter = 0;
 
 void COND_Init(void){
@@ -114,7 +114,7 @@ void COND_Set_Grade2(){
 
 uint32_t COND_Get_Kohm(){
 //		printf("G1_out %"PRIu16"  \r\n",Conductivity.Grade1);		
-//	printf("Cur_grade %d \r\n",Conductivity.Current_Grade);	
+	//printf("Cur_grade %d \r\n",Conductivity.Current_Grade);	
 	float resist = 0;
 	if (Conductivity.Current_Grade == 1){		
 		resist  = (float)Conductivity.Grade1 * GRADE1_SLOPE + GRADE1_OFFSET;	
@@ -123,11 +123,11 @@ uint32_t COND_Get_Kohm(){
 	}	
 //	GLCD_SetCursor(0,1,10);
 //	GLCD_DisplayFloatNumber(resist);
-	uint32_t result = resist * 18180 / Temperature_Compensate();
+//	uint32_t result = resist * 18180 / Temperature_Compensate();
 //	printf("comp out %"PRIu32"  \r\n",Temperature_Compensate());
-//	printf("conduct %"PRIu32"  \r\n",result);	
+//	printf("resist %"PRIu32"  \r\n",resist);	
 	
-	return result;		
+	return resist;		
 }
 
 uint32_t COND_Get_US(){
@@ -135,6 +135,6 @@ uint32_t COND_Get_US(){
 		conduct = 1000000 / conduct;
 	//	GLCD_SetCursor(0,6,10);
 	//	GLCD_DisplayFloatNumber(conduct);
-		//printf("conduct:%d \r\n",(uint32_t)conduct );	
+	//	printf("conduct:%d \r\n",(uint32_t)conduct );	
 		return (uint32_t)conduct;		
 }

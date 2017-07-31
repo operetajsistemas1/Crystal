@@ -403,11 +403,11 @@ void MENU_Process(int button){
 				GLCD_GoToLine(7);
 				GLCD_DisplayString("Maximum time:");	
 				GLCD_SetCursor(1,7,20);
-				MENU_Print_Time(Recirculation_Period);											
+				MENU_Print_Time(Recirculation_Time);											
 				GLCD_SetCursor(1,3,5);
 				GLCD_Printf("[H:MM]");
 				GLCD_SetCursor(0,3,40);
-				MENU_Print_Time(Recirculation_Time);
+				MENU_Print_Time(Recirculation_Period);
 				process =1;	
 				break;	
 				

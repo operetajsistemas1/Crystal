@@ -14,7 +14,7 @@ volatile STATES State = OFF;
 extern volatile RELAY_FLAGS Relay_Flags;
 extern volatile uint16_t Recirculation_Period;  //60 minutes
 extern volatile uint16_t Recirculation_Time;  //20 minutes
-const uint16_t ERROR = 1 * 60;  // check conductivity every 
+const uint16_t ERROR = 10;  // check conductivity every 
 volatile uint16_t tank_pump_time;
 volatile uint32_t phase_timer;
 volatile uint32_t transition_timer;
@@ -48,12 +48,12 @@ void STATE_Check(){
 			}			
 		break;		
 		case Running:
-			printf ("LP:running state check \r\n");
+		//	printf ("LP:running state check \r\n");
 			if (Tank_Full()){
 				State = TankFull; 
 				STATE_Set();
 			} else if (Low_Pressure()){
-				printf ("LP: running state check \r\n");
+			//	printf ("LP: running state check \r\n");
 				State = LowPress; 
 				STATE_Set();
 			}
@@ -126,6 +126,7 @@ void STATE_Set(){
 
 		break;		
 		case Running:
+			COND_Set_Grade2();
 			phase_timer = Recirculation_Period -Recirculation_Time;
 			HC595_Clear_Output();	
 			Relay_Flags.Input_Valve = 1;   // inpu valve
@@ -135,6 +136,7 @@ void STATE_Set(){
 			error_timer = ERROR;
 		break;		
 		case Recirculation:
+			COND_Set_Grade1();
 			HC595_Clear_Output();	
 			Relay_Flags.Rec_Pump = 1;
 			Relay_Flags.Photoxidation = 1;		
