@@ -16,7 +16,7 @@ uint8_t EEMEM BKP_Rec_Time;
 uint8_t EEMEM BKP_Rec_Period; 
 float EEMEM BKP_C_Offset;        
 float EEMEM BKP_C_Slope;   
-volatile uint32_t FILTER_Time_Left =   60; //723600;
+volatile uint32_t FILTER_Time_Left =  723600;
 extern volatile uint8_t COND_Units;
 extern volatile TEMPERATURE temperature;
 volatile uint16_t Recirculation_Period = 60 * 60;  //60 minutes

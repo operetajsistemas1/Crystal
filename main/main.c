@@ -65,13 +65,12 @@ int main(){
 	PWM_Init();
 	ADC_Init();
 	UART_Init();	
-	COND_Init();
 	TIMER_Init();
 	STATE_Init();
 	EEPROM_Init();
 	HC595_Write(Relay_Flags.flags);	
 	GPIO_Init();
-	
+		
 	
 	/*
 		Loop for temperature calibration
@@ -87,8 +86,7 @@ int main(){
 			MENU_Process(0);
 		}		
 	}		
-	
-	
+	COND_Init();
 						
 	while(1) {
 		BTN_Check(); //Check button input

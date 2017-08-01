@@ -21,7 +21,7 @@ const float GRADE2_SLOPE = 0.30501f;
 volatile uint16_t timer2_counter = 0;
 volatile COND  Conductivity ={.Current_Grade = 1, .Timer_Reset_Pending=1, .Grade1 = 6271000, .Grade2 = 6271000, .Overflow = 1};
 volatile uint16_t timer_temp;
-volatile uint8_t COND_Units = 0;
+volatile uint8_t COND_Units = 2;
 volatile uint8_t dirty_water_counter = 0;
 
 void COND_Init(void){
@@ -29,14 +29,15 @@ void COND_Init(void){
 	// External interrupt 0 for conductivity sensor Grade 2
 	// External interrupt 1 for conductivity sensor Grade 1
 	//Enable both edge detection for both interrupts
-	if (Conductivity.Current_Grade == 0)	{
-		GICR |= (1<<INT0);
-		GICR &= ~(1<<INT1);
-	} 
-	else{
-		GICR |= (1<<INT1);
-		GICR &= ~(1<<INT0);
-	}
+	//if (Conductivity.Current_Grade == 0)	{
+		//GICR |= (1<<INT0);
+		//GICR &= ~(1<<INT1);
+	//} 
+	//else{
+		//GICR |= (1<<INT1);
+		//GICR &= ~(1<<INT0);
+	//}
+	COND_Set_Grade2();
 	MCUCR |=(1<<ISC11)|(1<<ISC01);
 	// Timer 1 noise cancellor
 	// Timer 1 owerflow interrupr
@@ -102,6 +103,10 @@ void COND_Set_Grade1(){
 	GICR &= ~(1<<INT0);	 // Disable ext interrupt 0
 	Conductivity.Timer_Reset_Pending =1;
 	Conductivity.Current_Grade = 1;
+	GLCD_SetCursor(0,3,33);
+	GLCD_DisplayChar('1');	
+	GLCD_SetCursor(0,4,30);
+	GLCD_DisplayChar(' ');	
 	GICR |= (1<<INT1); 
 }
 
@@ -109,7 +114,13 @@ void COND_Set_Grade2(){
 	GICR &= ~(1<<INT1);	 // Disable ext interrupt 0
 	Conductivity.Timer_Reset_Pending =1;
 	Conductivity.Current_Grade = 0;
+	GLCD_SetCursor(0,3,33);
+	GLCD_DisplayChar(' ');	
+	GLCD_SetCursor(0,4,30);
+	GLCD_DisplayChar('2');	
 	GICR |= (1<<INT0);
+	
+	
 }
 
 uint32_t COND_Get_Kohm(){
@@ -118,9 +129,11 @@ uint32_t COND_Get_Kohm(){
 	float resist = 0;
 	if (Conductivity.Current_Grade == 1){		
 		resist  = (float)Conductivity.Grade1 * GRADE1_SLOPE + GRADE1_OFFSET;	
+	//	printf("resist:  %"PRIu16"  \r\n",Conductivity.Grade1);
 	} else {
 		resist  = (float)Conductivity.Grade2 * GRADE2_SLOPE + GRADE2_OFFSET;	
-	}	
+	//	printf("resist:  %"PRIu16"  \r\n",Conductivity.Grade2);
+	}			
 //	GLCD_SetCursor(0,1,10);
 //	GLCD_DisplayFloatNumber(resist);
 //	uint32_t result = resist * 18180 / Temperature_Compensate();

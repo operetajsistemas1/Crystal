@@ -14,7 +14,7 @@ volatile STATES State = OFF;
 extern volatile RELAY_FLAGS Relay_Flags;
 extern volatile uint16_t Recirculation_Period;  //60 minutes
 extern volatile uint16_t Recirculation_Time;  //20 minutes
-const uint16_t ERROR = 10;  // check conductivity every 
+const uint16_t ERROR = 5 * 60;  // check conductivity every 
 volatile uint16_t tank_pump_time;
 volatile uint32_t phase_timer;
 volatile uint32_t transition_timer;
@@ -48,12 +48,12 @@ void STATE_Check(){
 			}			
 		break;		
 		case Running:
-		//	printf ("LP:running state check \r\n");
+			printf ("running state check \r\n");
 			if (Tank_Full()){
 				State = TankFull; 
 				STATE_Set();
 			} else if (Low_Pressure()){
-			//	printf ("LP: running state check \r\n");
+				printf ("LP: running state check \r\n");
 				State = LowPress; 
 				STATE_Set();
 			}
@@ -74,9 +74,6 @@ void STATE_Check(){
 				ERROR_Check_Grade();
 			}
 		break;
-		//case Rinsing:
-			////check timers
-		//break;
 		case Dispensing:
 	//		printf(" state dispensing \r\n"); 	
 		break;
@@ -92,6 +89,10 @@ void STATE_Check(){
 			//probably have to add transition timer 
 			if (!Tank_Full()){
 				State = Running;			
+				STATE_Set();
+			}
+			if (!phase_timer) {
+				State = Recirculation;
 				STATE_Set();
 			}			
 		break;		
@@ -111,7 +112,7 @@ void STATE_Check(){
 
 
 void STATE_Set(){
-	//printf("%u \r\n", State); 		
+	printf("set: %u \r\n", State); 		
 	switch (State){
 		case OFF:
 			HC595_Clear_Output();
@@ -126,6 +127,16 @@ void STATE_Set(){
 
 		break;		
 		case Running:
+			if (Tank_Full()){
+				State = TankFull; 
+				STATE_Set();
+				break;
+			} else if (Low_Pressure()){
+				printf ("LP: running state check \r\n");
+				State = LowPress; 
+				STATE_Set();
+				break;
+			}
 			COND_Set_Grade2();
 			phase_timer = Recirculation_Period -Recirculation_Time;
 			HC595_Clear_Output();	
@@ -134,6 +145,7 @@ void STATE_Set(){
 			Relay_Flags.Sterilization = 1; //Sterilization lamp
 			MENU_Status_Header();	
 			error_timer = ERROR;
+			printf("Running state set finished \r\n"); 	
 		break;		
 		case Recirculation:
 			COND_Set_Grade1();
@@ -145,6 +157,7 @@ void STATE_Set(){
 			error_timer = ERROR;
 		break;
 		case Dispensing:
+			COND_Set_Grade1();
 			HC595_Clear_Output();	
 			Relay_Flags.Rec_Pump = 1;		
 			Relay_Flags.Dispense_Valve = 1;

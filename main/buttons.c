@@ -108,7 +108,7 @@ void BTN_Check(){
 				if (State == Dispensing) {
 					State = StandBy;
 					STATE_Set();					
-				} else {
+				} else if (State != OFF){
 					State = Dispensing;
 					STATE_Set();
 				}				

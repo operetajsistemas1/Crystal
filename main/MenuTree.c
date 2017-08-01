@@ -331,7 +331,18 @@ void MENU_Process(int button){
 			MENU_Status();
 			MENU_Status_Header();
 			MENU_Status_Header2();	
-		}			
+		}		
+		if (Conductivity.Current_Grade == 1) {
+			GLCD_SetCursor(0,3,33);
+			GLCD_DisplayChar('1');	
+			GLCD_SetCursor(0,4,30);
+			GLCD_DisplayChar(' ');	
+		} else {
+			GLCD_SetCursor(0,3,33);
+			GLCD_DisplayChar(' ');	
+			GLCD_SetCursor(0,4,30);
+			GLCD_DisplayChar('2');	
+		}	 	
 	} else if (tree_node_selected == &params){
 		if (tree_node_selected->selected == 1){
 			switch(process){
@@ -480,87 +491,82 @@ void MENU_Print_Time(uint16_t value){
 
 void MENU_Status(){
 				
-				
-				GLCD_SetCursor(0,7,10);
-				TEMPERATURE_Display();			
-				
-				//Filter timer
-				//TODO EEPROM	
-				if (FILTER_Time_Left>3600){ 
-					FILTER_Time_Left--;
-					GLCD_SetCursor(1,7,20);
-					GLCD_Printf("%u h   ",(FILTER_Time_Left/3600));	
-					EEPROM_Write_Filter();
-				} else {
-					GLCD_SetCursor(1,7,20);
-					GLCD_Printf("0 h   ");	
-					Error_Flag |= (1 << Filter_Error);   //Ser DI error
-				}
+	GLCD_SetCursor(0,7,10);
+	TEMPERATURE_Display();			
+			
+		if (FILTER_Time_Left>3600){ 
+			if (State==Running) FILTER_Time_Left--;
+			GLCD_SetCursor(1,7,20);
+			GLCD_Printf("%u h   ",(FILTER_Time_Left/3600));	
+			EEPROM_Write_Filter();
+		} else {
+			GLCD_SetCursor(1,7,20);
+			GLCD_Printf("0 h   ");	
+			Error_Flag |= (1 << Filter_Error);   //Ser DI error
+		}			
 				
 			if (!Conductivity.Overflow)	{
 			if (COND_Units == 1){
 				volatile uint32_t resistivity =  COND_Get_Kohm();
-				if (Conductivity.Current_Grade == 1){
-					GLCD_SetCursor(0,3,33);
-					GLCD_DisplayChar('1');	
-					GLCD_SetCursor(0,4,30);
-					GLCD_DisplayChar(' ');	
-				//	printf("grade 1");	
-				} else {
-					GLCD_SetCursor(0,3,33);
-					GLCD_DisplayChar(' ');	
-					GLCD_SetCursor(0,4,30);
-					GLCD_DisplayChar('2');	
-				//	printf("grade 2");	
-				}
 				if (resistivity > 18200) resistivity = 18200;		
 				if (resistivity < 100) {
-					resistivity = 100;		
-					GLCD_SetCursor(0,2,41);
-					GLCD_DisplayChar32(14);	  // change back to digit		
-				}			
-				GLCD_SetCursor(1,2,16);
-				GLCD_DisplayChar32(10);	
-				uint8_t digit = resistivity / 10000;
-				resistivity = resistivity % 10000;	
-				if (digit) {
-					GLCD_SetCursor(0,2,52);
-					GLCD_DisplayChar32(digit);	
-				}		
-				digit = resistivity / 1000;
-				resistivity = resistivity % 1000;
-				GLCD_SetCursor(1,2,3);
-				GLCD_DisplayChar32(digit);
-				digit = resistivity / 100;
-				resistivity = resistivity % 100;
-				GLCD_SetCursor(1,2,32);
-				GLCD_DisplayChar32(digit);				
-				
+					resistivity = 100;	
+					GLCD_SetCursor(0,2,42);
+					GLCD_DisplayChar32(16);						
+					GLCD_SetCursor(0,2,60);
+					GLCD_DisplayChar32(14);	  
+					GLCD_SetCursor(1,2,12);
+					GLCD_DisplayChar32(0);	  
+					GLCD_SetCursor(1,2,28);
+					GLCD_DisplayChar32(10);	
+					GLCD_SetCursor(1,2,32);
+					GLCD_DisplayChar32(1);	  
+							
+				} else {	
+		
+					GLCD_SetCursor(1,2,10);
+					GLCD_DisplayChar32(10);	
+					uint8_t digit = resistivity / 10000;
+					resistivity = resistivity % 10000;	
+					if (digit) {
+						GLCD_SetCursor(0,2,42);
+						GLCD_DisplayChar32(digit);	
+					} else {
+						GLCD_SetCursor(0,2,42);
+						GLCD_DisplayChar32(16);	
+					}
+					digit = resistivity / 1000;
+					resistivity = resistivity % 1000;
+					GLCD_SetCursor(0,2,58);
+					GLCD_DisplayChar32(digit);					
+					digit = resistivity / 100;
+					resistivity = resistivity % 100;
+					GLCD_SetCursor(1,2,16);
+					GLCD_DisplayChar32(digit);
+					digit = resistivity / 10;
+					resistivity = resistivity % 10;
+					GLCD_SetCursor(1,2,32);
+					GLCD_DisplayChar32(digit);				
+				}				
 										
 				
 			} else {
 				volatile uint32_t conductivity =  COND_Get_US();	
 			//	printf("%d",conductivity );	
-				if (Conductivity.Current_Grade == 1){
-					GLCD_SetCursor(0,3,33);
-					GLCD_DisplayChar('1');	
-					GLCD_SetCursor(0,4,30);
-					GLCD_DisplayChar(' ');	
-				//	printf("grade 1");	
-				} else {
-					GLCD_SetCursor(0,3,33);
-					GLCD_DisplayChar(' ');	
-					GLCD_SetCursor(0,4,30);
-					GLCD_DisplayChar('2');	
-				//	printf("grade 2");	
-				}
+				if (conductivity < 55) conductivity = 55;	
 				if (conductivity > 9999) {
-					conductivity = 9999;	
-					GLCD_SetCursor(0,2,30);
-					GLCD_DisplayChar32(13);	  // change back to digit							
-					}	
-				if (conductivity < 55) conductivity = 55;				
-				GLCD_SetCursor(0,2,52);
+					GLCD_SetCursor(0,2,52);
+					GLCD_DisplayChar32(16);	  // 					
+					GLCD_SetCursor(0,2,41);
+					GLCD_DisplayChar32(16);	  // 					
+					GLCD_SetCursor(1,2,1);
+					GLCD_DisplayChar32(13);	  // 
+					GLCD_SetCursor(1,2,16);
+					GLCD_DisplayChar32(1);	  //
+					GLCD_SetCursor(1,2,32);
+					GLCD_DisplayChar32(0);	  //										
+				} else {			
+				GLCD_SetCursor(0,2,58);
 				GLCD_DisplayChar32(10);		
 				uint8_t digit = conductivity / 1000;
 				conductivity = conductivity % 1000;
@@ -577,7 +583,7 @@ void MENU_Status(){
 				digit = conductivity;			
 				GLCD_SetCursor(1,2,32);
 				GLCD_DisplayChar32(digit);						
-				
+				}
 			} 
 			}else {
 				GLCD_SetCursor(1,2,32);
@@ -591,17 +597,6 @@ void MENU_Status(){
 				GLCD_SetCursor(0,2,39);	
 				GLCD_DisplayChar32(16);	//white space				
 			}			
-			//GLCD_SetCursor(0,2,52);
-			//GLCD_DisplayChar32(10);
-			//GLCD_SetCursor(0,2,41);
-			//GLCD_DisplayChar32(0);		 
-			//GLCD_SetCursor(1,2,0);
-			//GLCD_DisplayChar32(0);			
-			//GLCD_SetCursor(1,2,16);
-			//GLCD_DisplayChar32(6);
-			//GLCD_SetCursor(1,2,32);
-			//GLCD_DisplayChar32(5);		
-	
 }
 
 void MENU_Status_Header(){
@@ -657,12 +652,11 @@ void MENU_Status_Header(){
 
 void MENU_Status_Header2(){
 			//	printf ("LP: status header before \r\n");
-			if (Tank_Full()){
+			if (Tank_Full() & (State == (TankFull|Dispensing))){
 				GLCD_SetCursor(1,0,18);
 				GLCD_DisplayString(LCD_TankFull);
-			} else if (Low_Pressure() && (State!= OFF)){
+			} else if (State == LowPress){
 		//		printf ("LP: status header2 \r\n");
-				State = LowPress; 
 				GLCD_SetCursor(1,0,18);
 				GLCD_DisplayString(LCD_LowPressure);	
 		
