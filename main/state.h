@@ -20,7 +20,8 @@ typedef enum {
 	Rinsing = 5,
 	LowPress = 6,
 	TankFull = 7,
-	TankPump = 8
+	TankPump = 8,
+	PostFill = 9
 }STATES;
 
 void STATE_Init();

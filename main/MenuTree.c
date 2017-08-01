@@ -414,11 +414,11 @@ void MENU_Process(int button){
 				GLCD_GoToLine(7);
 				GLCD_DisplayString("Maximum time:");	
 				GLCD_SetCursor(1,7,20);
-				MENU_Print_Time(Recirculation_Time);											
+				MENU_Print_Time(Recirculation_Period);											
 				GLCD_SetCursor(1,3,5);
 				GLCD_Printf("[H:MM]");
 				GLCD_SetCursor(0,3,40);
-				MENU_Print_Time(Recirculation_Period);
+				MENU_Print_Time(Recirculation_Time);
 				process =1;	
 				break;	
 				
@@ -652,7 +652,7 @@ void MENU_Status_Header(){
 
 void MENU_Status_Header2(){
 			//	printf ("LP: status header before \r\n");
-			if (Tank_Full() & (State == (TankFull|Dispensing))){
+			if (Tank_Full()){
 				GLCD_SetCursor(1,0,18);
 				GLCD_DisplayString(LCD_TankFull);
 			} else if (State == LowPress){
