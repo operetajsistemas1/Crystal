@@ -19,7 +19,7 @@ typedef struct TEMPERATURE {
 uint16_t getTemperature(TEMPERATURE*);
 uint16_t TEMPERATURE_Calculate(void);
 void setTemperature(TEMPERATURE*, uint16_t);
-void TEMPERATURE_Read(uint16_t);
+///void TEMPERATURE_Read(uint16_t);
 uint32_t Temperature_Compensate (void);
 
 

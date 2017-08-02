@@ -35,12 +35,13 @@ void STATE_Check(){
 			//do nothing
 		break;
 		case StandBy:
-					printf ("LP:stendby state check \r\n");
+	//				printf ("LP:stendby state check \r\n");
 			if (Tank_Full()){
+				phase_timer = Recirculation_Period - Recirculation_Time;
 				State = TankFull;
 				STATE_Set();
 			} else if (Low_Pressure()){
-								printf ("LP: standby state check \r\n");
+		//						printf ("LP: standby state check \r\n");
 				State = LowPress;
 				STATE_Set();
 			} else {
@@ -49,17 +50,17 @@ void STATE_Check(){
 			}			
 		break;		
 		case Running:
-			printf ("running state check \r\n");
+	//		printf ("running state check \r\n");
 			if (Tank_Full()){
 				transition_timer = OVERFILL;
 				State = PostFill; 
 				STATE_Set();
 			} else if (Low_Pressure()){
-				printf ("LP: running state check \r\n");
+	//			printf ("LP: running state check \r\n");
 				State = LowPress; 
 				STATE_Set();
 			}
-			printf("phase timer:  [%"PRIu32"] \r\n",phase_timer);
+	//		printf("phase timer:  [%"PRIu32"] \r\n",phase_timer);
 			if (!phase_timer) {
 				State = Recirculation;
 				STATE_Set();
@@ -91,8 +92,12 @@ void STATE_Check(){
 		case TankFull:
 			//probably have to add transition timer 
 			if (!Tank_Full()){
-				State = Running;			
-				STATE_Set();
+				if (!transition_timer) {
+					State = Running;			
+					STATE_Set();
+				}				
+			} else {
+				transition_timer = 10;
 			}
 			if (!phase_timer) {
 				State = Recirculation;
@@ -107,7 +112,11 @@ void STATE_Check(){
 		break;		
 		case PostFill:
 			if (!transition_timer){
-				State = TankFull;
+				if (Tank_Full()) {
+					State = TankFull;
+				} else {
+					State = Running;
+				}
 				STATE_Set();
 			}
 		break;

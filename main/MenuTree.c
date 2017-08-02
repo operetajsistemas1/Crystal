@@ -232,9 +232,18 @@ void MENU_In(){
 }
 
 
-void MENU_Process(int button){
+void MENU_Process(uint8_t button){
 	printf("%s \r\n",tree_node_selected->text);	
+	printf("[%"PRIu8"] \r\n",button);	
 	if (tree_node_selected == &calibrate){
+		float static y1, x1, y2, x2;
+		if (button==4) {
+			Calibration_Running =0;
+			process = 0;
+			GLCD_Clear();
+			MENU_SCREEN = 0;
+			return;
+		}
 		switch(process){
 			case 0:
 			printf("0 \r\n");				
@@ -242,12 +251,14 @@ void MENU_Process(int button){
 			GLCD_Clear();				
 			GLCD_GoToLine(0);
 			GLCD_DisplayString("Calibrate temperature");	
+			GLCD_GoToLine(1);
+			GLCD_DisplayString("Use LOW solution");	
 			GLCD_GoToLine(6);
 			GLCD_DisplayString("Wait for stable reading");
 			GLCD_GoToLine(7);
 			GLCD_DisplayString("Press OK");	
 			GLCD_SetCursor(0,3,40);	
-			TEMPERATURE_Display();
+			TEMPERATURE_Display(TEMPERATURE_Calculate());
 			process =1;	
 			Calibration_Running = 1;
 			break;	
@@ -256,9 +267,10 @@ void MENU_Process(int button){
 				printf("1 \r\n");	
 	
 				GLCD_SetCursor(0,3,40);	
-				TEMPERATURE_Display();
+				TEMPERATURE_Display(TEMPERATURE_Calculate());
 						
 				if (button == 3) {
+					x1 = (float) temperature.temperatur;   // first x point
 					temper = TEMPERATURE_Calculate();
 					GLCD_Clear();				
 					GLCD_GoToLine(0);
@@ -270,7 +282,7 @@ void MENU_Process(int button){
 				//	GLCD_SetCursor(1,3,5);
 					//GLCD_Printf("oC");
 					GLCD_SetCursor(0,3,40);
-					TEMPERATURE_Read(temper);
+					TEMPERATURE_Display(temper);
 					process = 2;
 				} 
 			break;
@@ -280,29 +292,84 @@ void MENU_Process(int button){
 				case 1:
 						temper += 1;
 						GLCD_SetCursor(0,3,40);		
-						TEMPERATURE_Read(temper);													
+						TEMPERATURE_Display(temper);													
 				break;
 				case 2:
 					temper -= 1;
 					GLCD_SetCursor(0,3,40);	
-					TEMPERATURE_Read(temper);													
+					TEMPERATURE_Display(temper);													
 				break;	
 				case 3:
-					temperature.offset = temperature.offset - (TEMPERATURE_Calculate() - temper);
-					void EEPROM_Write_Temperature();
-					process =0;
-					MENU_SCREEN = 0;	
-					Calibration_Running = 0;
-					tree_node_selected = &parent;	
-					GLCD_Clear();
-		//			MENU_Status();
-		//			MENU_Status_Header();
-		//			MENU_Status_Header2();	
-				break;		
+					y1 = (float)temper;
+					GLCD_Clear();				
+					GLCD_GoToLine(0);
+					GLCD_DisplayString("Calibrate temperature");	
+					GLCD_GoToLine(1);
+					GLCD_DisplayString("Use HIGH solution");	
+					GLCD_GoToLine(6);
+					GLCD_DisplayString("Wait for stable reading");
+					GLCD_GoToLine(7);
+					GLCD_DisplayString("Press OK");	
+					GLCD_SetCursor(0,3,40);	
+					TEMPERATURE_Display(TEMPERATURE_Calculate());
+					process = 3;
+				break;
+			}	
+			break;			
+			case 3:
+				GLCD_SetCursor(0,3,40);	
+				TEMPERATURE_Display(TEMPERATURE_Calculate());
+						
+				if (button == 3) {
+					x2 = (float) temperature.temperatur;   // first x point
+					temper = TEMPERATURE_Calculate();
+					GLCD_Clear();				
+					GLCD_GoToLine(0);
+					GLCD_DisplayString("Calibrate temperature");	
+					GLCD_GoToLine(1);
+					GLCD_DisplayString("Use HIGH solution");	
+					GLCD_GoToLine(6);
+					GLCD_DisplayString("Use Up and Down buttons");
+					GLCD_GoToLine(7);
+					GLCD_DisplayString("to set temperature");				
+				//	GLCD_SetCursor(1,3,5);
+					//GLCD_Printf("oC");
+					GLCD_SetCursor(0,3,40);
+					TEMPERATURE_Display(temper);
+					process = 4;
+				} 
+			break;
+			case 4:
+			switch (button){
+				case 1:
+						temper += 1;
+						GLCD_SetCursor(0,3,40);		
+						TEMPERATURE_Display(temper);													
+				break;
+				case 2:
+					temper -= 1;
+					GLCD_SetCursor(0,3,40);	
+					TEMPERATURE_Display(temper);													
+				break;	
+				case 3:
+					y2 = (float)temper;
+					GLCD_Clear();				
+					process = 5;
+				break;
 			}
+			break;					
+			case 5:	
+					temperature.slope = (y2-y1)/(x2-x1);
+					temperature.offset = y1 - (temperature.slope * x1);									
+					void EEPROM_Write_Temperature();
+					Calibration_Running =0;
+					GLCD_Clear();
+					MENU_SCREEN = 0;
+					process = 0;
+					//return;
+			break;
 		}
-
-	
+		
 	} else if (tree_node_selected == &resetfilter){
 			FILTER_Time_Left = 723600;
 			MENU_SCREEN = 0;
@@ -384,22 +451,12 @@ void MENU_Process(int button){
 					case 3:
 						EEPROM_Write_Rec_Period();
 						process =0;
-						MENU_SCREEN = 0;	
-						tree_node_selected = &parent;	
-						GLCD_Clear();
-						MENU_Status();
-						MENU_Status_Header();
-						MENU_Status_Header2();	
+						MENU_Draw();
 					break;		
 					case 4:
 						EEPROM_Read_Rec_Period();
 						process =0;
-						MENU_SCREEN = 0;	
-						tree_node_selected = &parent;	
-						GLCD_Clear();
-						MENU_Status();
-						MENU_Status_Header();
-						MENU_Status_Header2();	
+						MENU_Draw();
 					break;	
 				}
 			}
@@ -443,29 +500,20 @@ void MENU_Process(int button){
 					case 3:
 						EEPROM_Write_Rec_Time();
 						process =0;
-						MENU_SCREEN = 0;	
-						tree_node_selected = &parent;	
-						GLCD_Clear();
-						MENU_Status();
-						MENU_Status_Header();
-						MENU_Status_Header2();	
+						MENU_Draw();
 					break;		
 					case 4:
 						EEPROM_Read_Rec_Time();
 						process =0;
-						MENU_SCREEN = 0;	
-						tree_node_selected = &parent;	
-						GLCD_Clear();
-						MENU_Status();
-						MENU_Status_Header();
-						MENU_Status_Header2();	
+						MENU_Draw();
 					break;	
-				}
-
-			}	
+				}	
+			}			
 		}
 	}
 }
+
+
 
 void MENU_Print_Time(uint16_t value){
 	uint8_t    msd, nsd; /// Tree values to display time on the screen
@@ -492,7 +540,7 @@ void MENU_Print_Time(uint16_t value){
 void MENU_Status(){
 				
 	GLCD_SetCursor(0,7,10);
-	TEMPERATURE_Display();			
+	TEMPERATURE_Display(TEMPERATURE_Calculate());			
 			
 		if (FILTER_Time_Left>3600){ 
 			if (State==Running) FILTER_Time_Left--;
@@ -653,15 +701,15 @@ void MENU_Status_Header(){
 void MENU_Status_Header2(){
 			//	printf ("LP: status header before \r\n");
 			if (Tank_Full()){
-				GLCD_SetCursor(1,0,18);
+				GLCD_SetCursor(1,0,17);
 				GLCD_DisplayString(LCD_TankFull);
 			} else if (State == LowPress){
 		//		printf ("LP: status header2 \r\n");
-				GLCD_SetCursor(1,0,18);
+				GLCD_SetCursor(1,0,17);
 				GLCD_DisplayString(LCD_LowPressure);	
 		
 			} else {
-				GLCD_SetCursor(1,0,18);
+				GLCD_SetCursor(1,0,17);
 				GLCD_DisplayString(LCD_Blank);					
 			}
 			if (COND_Units) {

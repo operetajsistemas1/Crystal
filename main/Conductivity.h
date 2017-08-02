@@ -13,6 +13,8 @@ typedef struct {
 	uint8_t Current_Grade;// 0 = grade 2 sensor, 1 = grade 1 sensor
 	volatile uint16_t Grade1;// 0 = grade 2 sensor, 1 = grade 1 sensor  
 	volatile uint16_t Grade2;// 0 = grade 2 sensor, 1 = grade 1 sensor  
+	volatile uint16_t Grade1_Saved;// 0 = grade 2 sensor, 1 = grade 1 sensor  
+	volatile uint16_t Grade2_Saved;// 0 = grade 2 sensor, 1 = grade 1 sensor  
 	uint32_t Timer_Reset_Pending;	
 	uint16_t Slope_Grade1;
 	uint16_t Offset_Grade1;

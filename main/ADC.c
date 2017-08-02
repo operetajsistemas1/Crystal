@@ -1,6 +1,6 @@
 /*
  * ADC.c
- *
+ * 
  * Created: 27.05.2017 21:38:57
  *  Author: Andris
  */ 

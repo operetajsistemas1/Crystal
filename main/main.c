@@ -66,7 +66,6 @@ int main(){
 	ADC_Init();
 	UART_Init();	
 	TIMER_Init();
-	STATE_Init();
 	EEPROM_Init();
 	HC595_Write(Relay_Flags.flags);	
 	GPIO_Init();
@@ -86,8 +85,9 @@ int main(){
 			MENU_Process(0);
 		}		
 	}		
+	STATE_Init();	
 	COND_Init();
-						
+					
 	while(1) {
 		BTN_Check(); //Check button input
 		//this will happen every second

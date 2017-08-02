@@ -35,20 +35,26 @@ uint16_t TEMPERATURE_Calculate(){
 }
 
 
-void TEMPERATURE_Display(){
-	uint16_t temper = TEMPERATURE_Calculate();
+void TEMPERATURE_Display(uint16_t temper){
+//	uint16_t temper = TEMPERATURE_Calculate();
 	unsigned char str[5];
-//	printf("e2 %"PRIu16" \r\n",temper);	
+//	printf("temper %"PRIu16" \r\n",temper);	
 	snprintf(str, sizeof str, "%lu", (unsigned long)temper); /* Method 1 */
-	GLCD_Printf("%c%c.%c@C   ",str[0],str[1],str[2]);							
+	if (temper >= 100){
+		GLCD_Printf("%c%c.%c@C   ",str[0],str[1],str[2]);	
+	} else if (temper >= 10){
+		GLCD_Printf(" %c.%c@C   ",str[0],str[1]);		
+	} else {
+		GLCD_Printf(" 0.%c@C   ",str[0]);		
+	}							
 }
 
-void TEMPERATURE_Read(uint16_t temper){
-	unsigned char str[5];
-//	printf("e2 %"PRIu16" \r\n",temper);	
-	snprintf(str, sizeof str, "%lu", (unsigned long)temper); /* Method 1 */
-	GLCD_Printf("%c%c.%c@C   ",str[0],str[1],str[2]);							
-}
+//void TEMPERATURE_Read(uint16_t temper){
+	//unsigned char str[5];
+////	printf("e2 %"PRIu16" \r\n",temper);	
+	//snprintf(str, sizeof str, "%lu", (unsigned long)temper); /* Method 1 */
+	//GLCD_Printf("%c%c.%c@C   ",str[0],str[1],str[2]);							
+//}
 
 uint32_t Temperature_Compensate (){
 	

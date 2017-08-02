@@ -24,7 +24,7 @@ void MENU_In();
 void MENU_Out();
 void MENU_Up();
 
-void MENU_Process(int);
+void MENU_Process(uint8_t);
 void MENU_Print_Time(uint16_t);
 void MENU_Status();
 void MENU_Status_Header();

@@ -55,6 +55,8 @@ void EEPROM_Write_Defaults(){
 	eeprom_write_byte(&BKP_Rec_Period,Recirculation_Period/60);	
 }	
 
+
+
 void EEPROM_Write_Units(){
 	eeprom_write_byte(&BKP_Units,COND_Units);
 }
@@ -74,9 +76,9 @@ void EEPROM_Write_Rec_Period(){
 }
 
 void EEPROM_Read_Rec_Period(){
-		Recirculation_Time = eeprom_read_byte(&BKP_Rec_Time) * 60;
+		Recirculation_Period = eeprom_read_byte(&BKP_Rec_Period) * 60;
 }		
 		
 void EEPROM_Read_Rec_Time(){		
-		Recirculation_Period = eeprom_read_byte(&BKP_Rec_Period) * 60;
+		Recirculation_Time = eeprom_read_byte(&BKP_Rec_Time) * 60;
 }
