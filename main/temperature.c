@@ -28,6 +28,7 @@ void setTemperature(TEMPERATURE *temperature, uint16_t temp){ //this will calcul
 
 uint16_t TEMPERATURE_Calculate(){
 	uint16_t temp = (temperature.temperatur * temperature.slope) + temperature.offset; 
+	if (temp> 750) temp = 250;
 //	printf("e1 %"PRIu16" \r\n",temp);	
 	//GLCD_GoToLine(1);
 	//GLCD_DisplayFloatNumber(temperature.slope);

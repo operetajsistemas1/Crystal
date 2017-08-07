@@ -11,6 +11,6 @@
 
 void PWM_Init();
 void Wait();
-
+void SetPWMOutput(uint8_t);
 
 #endif /* PWM_H_ */

@@ -47,3 +47,29 @@ void PWM_Init()
    OCR0=149;   // init duty to 117
 }
 
+/******************************************************************
+Sets the duty cycle of output. 
+
+Arguments
+---------
+duty: Between 0 - 255
+
+0= 0%
+
+255= 100%
+
+The Function sets the duty cycle of pwm output generated on OC0 PIN
+The average voltage on this output pin will be
+
+         duty
+ Vout=  ------ x 5v
+         255 
+
+This can be used to control the brightness of LED or Speed of Motor.
+*********************************************************************/
+
+void SetPWMOutput(uint8_t d)
+{
+   OCR0=d;
+}
+

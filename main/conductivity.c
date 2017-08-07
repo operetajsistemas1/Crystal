@@ -14,10 +14,10 @@
 #include <stdlib.h>
 #include "temperature.h"
 
-const float GRADE1_OFFSET = 38.208f;
-const float GRADE1_SLOPE = 0.30501f;
-const float GRADE2_OFFSET = 38.208f;
-const float GRADE2_SLOPE = 0.30501f;
+const float GRADE1_OFFSET = 23.088f;
+const float GRADE1_SLOPE = 1.097f;
+const float GRADE2_OFFSET = 23.088f;
+const float GRADE2_SLOPE = 1.097f;
 volatile uint16_t timer2_counter = 0;
 volatile COND  Conductivity ={.Current_Grade = 1, .Timer_Reset_Pending=1, .Grade1 = 0, .Grade2 = 0, .Overflow = 1};
 volatile uint16_t timer_temp;
@@ -59,14 +59,11 @@ ISR(TIMER1_OVF_vect){
 
 ISR(INT1_vect) // grade 2
 {	
-	if (Conductivity.Timer_Reset_Pending){
-		Conductivity.Timer_Reset_Pending = 0;
-		return;
-	}
 		ATOMIC_BLOCK ( ATOMIC_RESTORESTATE ){
 			timer_temp =  TCNT1;
 			TCNT1 = 0; 
-			if (timer_temp > 200){  //ignore events shorter than 100 ticks for OpAmp contact bounce
+			
+			if (timer_temp > 80){  //ignore events shorter than 100 ticks for OpAmp contact bounce
 				//if (Conductivity.Timer_Reset_Pending){
 					//Conductivity.Timer_Reset_Pending--;
 					//GIFR |= (1<<INT1); // reset interrupt if it got set already
@@ -93,14 +90,14 @@ ISR(INT0_vect) // grade 1
 		ATOMIC_BLOCK ( ATOMIC_RESTORESTATE ){
 			timer_temp =  TCNT1;
 			TCNT1 = 0; 
-			if (timer_temp > 200){  //ignore events shorter than 100 ticks for OpAmp contact bounce
+			if (timer_temp > 100){  //ignore events shorter than 100 ticks for OpAmp contact bounce
 				//if (Conductivity.Timer_Reset_Pending){
 					//Conductivity.Timer_Reset_Pending--;
 					//GIFR |= (1<<INT0); // reset interrupt if it got set already
 					//return;
 				//}
 			//	printf("Grade1:  [%"PRIu16"] \r\n",timer_temp);
-				Conductivity.Grade1 = (0.1)*Conductivity.Grade1 + 0.9*timer_temp;   //exponential moving average
+				Conductivity.Grade1 = (0.3)*Conductivity.Grade1 + 0.7*timer_temp;   //exponential moving average
 				dirty_water_counter = 0;
 			} else {
 				dirty_water_counter++;
@@ -115,11 +112,14 @@ ISR(INT0_vect) // grade 1
 }	
 
 void COND_Set_Grade1(){
+	static uint8_t first_run = 1;
 	GICR &= ~(1<<INT1);	 // Disable ext interrupt 0
 	GICR |= (1<<INT0); 
-	Conductivity.Timer_Reset_Pending =15;
+	if (!first_run){
+		Conductivity.Timer_Reset_Pending =7;
+	}	
+	first_run = 0;
 	Conductivity.Current_Grade = 1;
-	Conductivity.Grade2_Saved = Conductivity.Grade2;
 	GLCD_SetCursor(0,3,33);
 	GLCD_DisplayChar('1');	
 	GLCD_SetCursor(0,4,30);
@@ -127,11 +127,14 @@ void COND_Set_Grade1(){
 }
 
 void COND_Set_Grade2(){
+	static uint8_t first_run2 = 1;
 	GICR &= ~(1<<INT0);	 // Disable ext interrupt 0
-	GICR |= (1<<INT1);
-	Conductivity.Grade1_Saved = Conductivity.Grade1;
-	
-	Conductivity.Timer_Reset_Pending =15;
+	GICR |= (1<<INT1);	
+	if (!first_run2){
+	Conductivity.Timer_Reset_Pending =7;
+	}
+	first_run2 = 0;
+	printf("Reset set %"PRIu8"  \r\n",Conductivity.Timer_Reset_Pending);		
 	Conductivity.Current_Grade = 0;
 	GLCD_SetCursor(0,3,33);
 	GLCD_DisplayChar(' ');	
@@ -144,21 +147,40 @@ void COND_Set_Grade2(){
 uint32_t COND_Get_Kohm(){	
 	//printf("Cur_grade %d \r\n",Conductivity.Current_Grade);	
 	float resist = 0;
+				GLCD_SetCursor(0,1,10);
+			GLCD_DisplayDecimalNumber(Conductivity.Grade2,6);
 	if (Conductivity.Current_Grade == 1){	
-		printf("G1_out %"PRIu16"  \r\n",Conductivity.Grade1);		
-		resist  = (float)Conductivity.Grade1 * GRADE1_SLOPE + GRADE1_OFFSET;	
-	//	printf("resist:  %"PRIu16"  \r\n",Conductivity.Grade1);
+		//printf("G1_out %"PRIu16"  \r\n",Conductivity.Grade1);	
+
+
+		if ((!Conductivity.Timer_Reset_Pending) & ((Conductivity.Grade1/16) < (abs(Conductivity.Grade1 - Conductivity.Grade1_Saved)))){
+			resist  = (float)Conductivity.Grade1 * GRADE1_SLOPE + GRADE1_OFFSET;	
+			Conductivity.Grade1_Saved = Conductivity.Grade1;
+		}			
+		else {
+			if (Conductivity.Timer_Reset_Pending) Conductivity.Timer_Reset_Pending--;
+			resist  = (float)Conductivity.Grade1_Saved * GRADE1_SLOPE + GRADE1_OFFSET;
+		//	printf("G1_saved %"PRIu16"  \r\n",Conductivity.Grade1_Saved);	
+		}
 	} else {
-		printf("G2_out %"PRIu16"  \r\n",Conductivity.Grade2);	
-		resist  = (float)Conductivity.Grade2 * GRADE2_SLOPE + GRADE2_OFFSET;	
-	//	printf("resist:  %"PRIu16"  \r\n",Conductivity.Grade2);
+		//printf("current %"PRIu16"  \r\n",Conductivity.Grade2);	
+		//printf("saved %"PRIu16"  \r\n",Conductivity.Grade2_Saved);	
+		//printf("abs %"PRIu16"  \r\n",abs(Conductivity.Grade2 - Conductivity.Grade2_Saved));	
+		//printf("tresh %"PRIu16"  \r\n",(Conductivity.Grade2/16));	
+		//printf("reset %"PRIu16"  \r\n",Conductivity.Timer_Reset_Pending);
+		if ((!Conductivity.Timer_Reset_Pending) & ((Conductivity.Grade2/16) < (abs(Conductivity.Grade2 - Conductivity.Grade2_Saved)))) {
+			resist  = (float)Conductivity.Grade2 * GRADE2_SLOPE + GRADE2_OFFSET;
+			Conductivity.Grade2_Saved = Conductivity.Grade2;
+		}else {
+			//printf("G2_out %"PRIu16"  \r\n",Conductivity.Grade2_Saved);	
+			if (Conductivity.Timer_Reset_Pending) Conductivity.Timer_Reset_Pending--;
+			resist  = (float)Conductivity.Grade2_Saved * GRADE2_SLOPE + GRADE2_OFFSET;
+		}
 	}			
-	GLCD_SetCursor(0,1,10);
-	GLCD_DisplayFloatNumber(resist);
-//	uint32_t result = resist * 18180 / Temperature_Compensate();
+
+	uint32_t result = resist * 18180 / Temperature_Compensate();
 //	printf("comp out %"PRIu32"  \r\n",Temperature_Compensate());
 //	printf("resist %"PRIu32"  \r\n",resist);	
-	
 	return resist;		
 }
 

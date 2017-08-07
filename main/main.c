@@ -61,13 +61,13 @@ int main(){
 	//Relay_Flags.flags = 0b1111110000000111;
 	sei();	
 	HC595_Init();
+		HC595_Write(Relay_Flags.flags);	
 	GLCD_Init();
 	PWM_Init();
 	ADC_Init();
 	UART_Init();	
 	TIMER_Init();
 	EEPROM_Init();
-	HC595_Write(Relay_Flags.flags);	
 	GPIO_Init();
 		
 	
