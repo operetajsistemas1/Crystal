@@ -7,8 +7,14 @@
 #include <avr/io.h>
 #include <util/delay.h>
 #include "PWM.h"
+#include "ADC.h"
+#include "stdutils.h"
+#include <math.h>
+#include <stdlib.h>
+#include "uart.h"
 
-
+static volatile uint16_t PWM_Treshhold = 136;
+const uint16_t fiveVoltADCValue = 460;
 void PWM_Init()
 {
    /*
@@ -44,7 +50,7 @@ void PWM_Init()
    //Set OC0 PIN as output. It is  PB3 on ATmega16 ATmega32
 
    DDRB|=(1<<PINB3);
-   OCR0=149;   // init duty to 117
+   OCR0=PWM_Treshhold;   // init duty to 117
 }
 
 /******************************************************************
@@ -68,8 +74,30 @@ The average voltage on this output pin will be
 This can be used to control the brightness of LED or Speed of Motor.
 *********************************************************************/
 
-void SetPWMOutput(uint8_t d)
-{
-   OCR0=d;
+void PWM_Set()
+{	
+	static uint16_t ADCValue = 500;
+	static uint8_t NEG_Counter = 0;
+	static uint8_t POZ_Counter = 0;
+	ADCValue = 0.5*ADCValue + 0.5*ADC_Read(1);    //(1-0.2)*temperature.temperatur + 0.2*ADCValue;
+	printf("ADCValue: [%"PRIu16"] \r\n", ADCValue);
+	if (ADCValue > (fiveVoltADCValue+8)) {
+		POZ_Counter++;
+		NEG_Counter = 0;
+		if (POZ_Counter > 3){
+			PWM_Treshhold++;
+			POZ_Counter = 0;
+			OCR0=PWM_Treshhold;	
+		}
+	} else if (ADCValue < (fiveVoltADCValue-8)) {
+		POZ_Counter = 0;
+		NEG_Counter++;
+		if (NEG_Counter > 3){
+			PWM_Treshhold--;
+			NEG_Counter = 0;
+			OCR0=PWM_Treshhold;	
+		}
+	}		
+	printf("PWM_Tresh: [%"PRIu16"] \r\n", PWM_Treshhold);
 }
 

@@ -14,7 +14,7 @@ uint32_t const t_compensation_table[COMPENSATION_TABLE_SIZE]={86190, 60480, 4343
 
 //temperature is linear kx+b, where k - slope, b offset
 
-volatile TEMPERATURE temperature = {.temperatur = 0,
+volatile TEMPERATURE temperature = {.temperatur = 240,
 									 .offset = 0, 
 									.slope = 0.75f};
 
@@ -27,6 +27,11 @@ void setTemperature(TEMPERATURE *temperature, uint16_t temp){ //this will calcul
 }
 
 uint16_t TEMPERATURE_Calculate(){
+	//uint16_t ADCValue;
+	uint16_t ADCValue = ADC_Read(0);
+	//printf("TEMP ADC %"PRIu16" \r\n",ADCValue);		
+	temperature.temperatur = (1-0.2)*temperature.temperatur + 0.2*ADCValue;
+	
 	uint16_t temp = (temperature.temperatur * temperature.slope) + temperature.offset; 
 	if (temp> 750) temp = 250;
 //	printf("e1 %"PRIu16" \r\n",temp);	

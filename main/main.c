@@ -61,15 +61,14 @@ int main(){
 	//Relay_Flags.flags = 0b1111110000000111;
 	sei();	
 	HC595_Init();
-		HC595_Write(Relay_Flags.flags);	
+	HC595_Write(Relay_Flags.flags);	
 	GLCD_Init();
 	PWM_Init();
-	ADC_Init();
 	UART_Init();	
+	ADC_Init();	
 	TIMER_Init();
 	EEPROM_Init();
-	GPIO_Init();
-		
+	GPIO_Init();	
 	
 	/*
 		Loop for temperature calibration
@@ -92,6 +91,7 @@ int main(){
 		BTN_Check(); //Check button input
 		//this will happen every second
 		if (ticker) {
+			PWM_Set();   // Adjust -5V
 			if (phase_timer) phase_timer--;
 			if (transition_timer) transition_timer--;
 			if (error_timer) error_timer--;
