@@ -27,7 +27,7 @@ void MENU_Up();
 void MENU_Process(uint8_t);
 void MENU_Print_Time(uint16_t);
 void MENU_Status();
-void MENU_Status_Header();
+//void MENU_Status_Header(STATES);
 void MENU_Status_Header2();
 
 #endif /* MENUTREE_H_ */

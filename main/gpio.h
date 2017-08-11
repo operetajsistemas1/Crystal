@@ -13,5 +13,8 @@
 	
 	char Tank_Full();
 	char Low_Pressure();
+#ifdef _CLINIC
+	char Grade2Flow();
+#endif //_CLINIC
 	
 #endif //__GPIO_H

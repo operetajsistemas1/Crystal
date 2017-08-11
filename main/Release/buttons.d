@@ -1,4 +1,4 @@
-buttons.d buttons.o: .././buttons.c .././buttons.h \
+buttons.d buttons.o: .././buttons.c .././config.h .././buttons.h \
  c:\program\ files\ (x86)\atmel\avr\ studio\ 5.1\extensions\atmel\avrgcc\3.3.1.27\avrtoolchain\bin\../lib/gcc/avr/4.5.1/../../../../avr/include/avr/io.h \
  c:\program\ files\ (x86)\atmel\avr\ studio\ 5.1\extensions\atmel\avrgcc\3.3.1.27\avrtoolchain\bin\../lib/gcc/avr/4.5.1/../../../../avr/include/avr/sfr_defs.h \
  c:\program\ files\ (x86)\atmel\avr\ studio\ 5.1\extensions\atmel\avrgcc\3.3.1.27\avrtoolchain\bin\../lib/gcc/avr/4.5.1/../../../../avr/include/inttypes.h \
@@ -14,7 +14,9 @@ buttons.d buttons.o: .././buttons.c .././buttons.h \
  c:\program\ files\ (x86)\atmel\avr\ studio\ 5.1\extensions\atmel\avrgcc\3.3.1.27\avrtoolchain\bin\../lib/gcc/avr/4.5.1/../../../../avr/include/util/delay_basic.h \
  .././conductivity.h .././state.h .././glcd.h \
  c:\program\ files\ (x86)\atmel\avr\ studio\ 5.1\extensions\atmel\avrgcc\3.3.1.27\avrtoolchain\bin\../lib/gcc/avr/4.5.1/../../../../avr/include/avr\io.h \
- .././stdutils.h .././MenuTree.h .././config.h
+ .././stdutils.h .././MenuTree.h
+
+.././config.h:
 
 .././buttons.h:
 
@@ -55,5 +57,3 @@ c:\program\ files\ (x86)\atmel\avr\ studio\ 5.1\extensions\atmel\avrgcc\3.3.1.27
 .././stdutils.h:
 
 .././MenuTree.h:
-
-.././config.h:

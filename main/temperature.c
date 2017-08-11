@@ -28,9 +28,9 @@ void setTemperature(TEMPERATURE *temperature, uint16_t temp){ //this will calcul
 
 uint16_t TEMPERATURE_Calculate(){
 	//uint16_t ADCValue;
-	uint16_t ADCValue = ADC_Read(0);
+//	uint16_t ADCValue = ADC_Read(0);
 	//printf("TEMP ADC %"PRIu16" \r\n",ADCValue);		
-	temperature.temperatur = (1-0.2)*temperature.temperatur + 0.2*ADCValue;
+//	temperature.temperatur = (1-0.2)*temperature.temperatur + 0.2*ADCValue;
 	
 	uint16_t temp = (temperature.temperatur * temperature.slope) + temperature.offset; 
 	if (temp> 750) temp = 250;

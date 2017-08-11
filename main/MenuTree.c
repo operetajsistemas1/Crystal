@@ -36,8 +36,10 @@ extern uint8_t MENU_SCREEN;
 extern volatile uint32_t FILTER_Time_Left;
 extern volatile uint8_t Use_MOhm;
 volatile uint8_t process = 0;
+#ifdef _ULTRAPURE
 extern volatile uint16_t Recirculation_Period;  //60 minutes
 extern volatile uint16_t Recirculation_Time;  //20 minutes
+#endif //_ULTRAPURE
 extern volatile BTN buttons;
 extern volatile uint8_t Calibration_Running;
 extern volatile TEMPERATURE temperature;
@@ -74,6 +76,7 @@ tree_node mohm = {
 
 
 extern tree_node params;
+#ifdef _ULTRAPURE
 tree_node recper = {
 	.parent = &params,
 	.text = "Recirculation period\0",
@@ -88,6 +91,7 @@ tree_node rectime = {
 	.child =
 	{ NULL, NULL, NULL, NULL, NULL}
 };
+#endif //_ULTRAPURE
 tree_node units = {
 	.parent = &params,
 	.text = "Measurement units\0",
@@ -99,6 +103,7 @@ tree_node units = {
 
 
 extern tree_node parent; // define that we will have such parent reference
+#ifdef _ULTRAPURE
 tree_node params = {
 	.parent = &parent,
 	.text = "Options \0",
@@ -106,6 +111,15 @@ tree_node params = {
 	.child =
 	{ &units, &recper, &rectime, NULL}//  { &units, &timedate, &recirc, &logint, NULL}
 };
+#else 
+tree_node params = {
+	.parent = &parent,
+	.text = "Options \0",
+	.selected = 0,
+	.child =
+	{ &units, NULL, NULL, NULL}//  { &units, &timedate, &recirc, &logint, NULL}
+};
+#endif //_ULTRAPURE
 
 
 tree_node resetfilter = {
@@ -211,7 +225,7 @@ void MENU_Out(){
 		MENU_SCREEN = 0;
 		GLCD_Clear();
 		MENU_Status();
-		MENU_Status_Header();
+		MENU_Status_Header(State);
 		MENU_Status_Header2();
 	}
 }	
@@ -233,8 +247,8 @@ void MENU_In(){
 
 
 void MENU_Process(uint8_t button){
-	printf("%s \r\n",tree_node_selected->text);	
-	printf("[%"PRIu8"] \r\n",button);	
+//	printf("%s \r\n",tree_node_selected->text);	
+//	printf("[%"PRIu8"] \r\n",button);	
 	if (tree_node_selected == &calibrate){
 		float static y1, x1, y2, x2;
 		if (button==4) {
@@ -371,12 +385,12 @@ void MENU_Process(uint8_t button){
 		}
 		
 	} else if (tree_node_selected == &resetfilter){
-			FILTER_Time_Left = 723600;
+			FILTER_Time_Left = 723000;
 			MENU_SCREEN = 0;
 			tree_node_selected = &parent;					
 			GLCD_Clear();
 			MENU_Status();
-			MENU_Status_Header();
+			MENU_Status_Header(State);
 			MENU_Status_Header2();
 			printf("behav reset filt\r\n");	
 	} else if (tree_node_selected == &units){
@@ -387,7 +401,7 @@ void MENU_Process(uint8_t button){
 			EEPROM_Write_Units();
 			GLCD_Clear();
 			MENU_Status();
-			MENU_Status_Header();
+			MENU_Status_Header(State);
 			MENU_Status_Header2();			
 		}else if (tree_node_selected->selected == 1){
 			COND_Units = 1;
@@ -396,7 +410,7 @@ void MENU_Process(uint8_t button){
 			EEPROM_Write_Units();
 			GLCD_Clear();
 			MENU_Status();
-			MENU_Status_Header();
+			MENU_Status_Header(State);
 			MENU_Status_Header2();	
 		}		
 		if (Conductivity.Current_Grade == 1) {
@@ -410,7 +424,9 @@ void MENU_Process(uint8_t button){
 			GLCD_SetCursor(0,4,30);
 			GLCD_DisplayChar('2');	
 		}	 	
-	} else if (tree_node_selected == &params){
+	} 
+#ifdef _ULTRAPURE
+	else if (tree_node_selected == &params){
 		if (tree_node_selected->selected == 1){
 			switch(process){
 				case 0:
@@ -511,6 +527,7 @@ void MENU_Process(uint8_t button){
 			}			
 		}
 	}
+#endif //_ULTRAPURE
 }
 
 
@@ -647,8 +664,9 @@ void MENU_Status(){
 			}			
 }
 
-void MENU_Status_Header(){
-	switch (State){
+void MENU_Status_Header(STATES stat){
+	if (MENU_SCREEN) return;
+	switch (stat){
 		case OFF:
 			GLCD_GoToLine(0);
 			GLCD_DisplayString(LCD_OFF);
@@ -699,18 +717,16 @@ void MENU_Status_Header(){
 }
 
 void MENU_Status_Header2(){
-			//	printf ("LP: status header before \r\n");
+			if (MENU_SCREEN) return;
 			if (Tank_Full()){
-				GLCD_SetCursor(1,0,17);
+				GLCD_SetCursor(1,0,12);
 				GLCD_DisplayString(LCD_TankFull);
 			} else if (State == LowPress){
-		//		printf ("LP: status header2 \r\n");
-				GLCD_SetCursor(1,0,17);
+				GLCD_SetCursor(1,0,12);
 				GLCD_DisplayString(LCD_LowPressure);	
-		
 			} else {
-				GLCD_SetCursor(1,0,17);
-				GLCD_DisplayString(LCD_Blank);					
+				GLCD_SetCursor(1,0,12);
+				GLCD_DisplayString(LCD_Blank);	
 			}
 			if (COND_Units) {
 				GLCD_ShowMOhm();	

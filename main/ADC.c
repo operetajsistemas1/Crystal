@@ -13,42 +13,47 @@
 #include <util/atomic.h>
 #include "uart.h"
 
-extern struct TEMPERATURE temperature; 
-
-//void ADC_Init()
-//{
-//ADCSRA |= ((1<<ADPS2)|(1<<ADPS1)|(1<<ADPS0)); 
-//ADMUX = (1<<REFS0);                         // For Aref=AVcc;
-//ADCSRA |= (1<<ADEN)|(1<<ADIE); //Rrescalar div factor =128
-////DDRA &= ~(1<<PINA0);
-////DDRA &= ~(1<<PINA1);
-//ADCSRA |= (1<<ADSC);
-//}
+extern volatile struct TEMPERATURE temperature; 
+extern volatile uint16_t PWM_Value;
 
 void ADC_Init()
 {
-ADCSRA=(1<<ADPS2)|(1<<ADPS1)|(1<<ADPS0);	
-ADMUX=(1<<REFS0);                         // For Aref=AVcc;
-ADCSRA=(1<<ADEN); //Rrescalar div factor =128
+ADCSRA |= ((1<<ADPS2)|(1<<ADPS1)|(1<<ADPS0)); 
+ADMUX = (1<<REFS0);                         // For Aref=AVcc;
+ADCSRA |= (1<<ADEN)|(1<<ADIE); //Rrescalar div factor =128
+//DDRA &= ~(1<<PINA0);
+//DDRA &= ~(1<<PINA1);
+ADCSRA |= (1<<ADSC);
 }
 
 
 
 
-//ISR(ADC_vect)
-//{
-	//uint16_t ADCValue;;
-	//ATOMIC_BLOCK ( ATOMIC_RESTORESTATE ){
-	//ADCValue = ADCL | (ADCH << 8);
-	//}	
-	//temperature.temperatur = (1-0.1)*temperature.temperatur + 0.1*ADCValue;   //exponential moving average
-	//ADCSRA |= 1<<ADSC;
-//}
+ISR(ADC_vect)
+{
+	uint16_t ADCValue;;
+	ATOMIC_BLOCK ( ATOMIC_RESTORESTATE ){
+		ADCValue = ADCL | (ADCH << 8);
+	}	
+	switch (ADMUX){
+	case 0x40:
+		ADMUX = 0x41;
+		temperature.temperatur = (1-0.1)*temperature.temperatur + 0.1*ADCValue;   //exponential moving average
+		break;
+	case 0x41:
+		ADMUX = 0x40;
+		PWM_Value = 0.5*PWM_Value + 0.5*ADCValue;    //(1-0.2)*temperature.temperatur + 0.2*ADCValue;
+		break;
+	default:
+		//Default code
+		break;
+	}
+
+	ADCSRA |= 1<<ADSC;
+}
 
 uint16_t ADC_Read(uint8_t ch)
 {
-   //Select ADC Channel ch must be 0-7
-  // ch=ch&0b00000111;
    ADMUX = (ADMUX & 0xE0) | (ch & 0x1F);   //select channel (MUX0-4 bits)
   
    //Start Single conversion

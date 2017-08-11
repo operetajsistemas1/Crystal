@@ -9,12 +9,10 @@
 
 #include "gpio.h"
 #include "config.h"
-//#include <avr/io.h>
 #include <util/delay.h>
 #include "SNx4HC595.h"
-#include "glcd.h"	//User defined LCD library which conatins the lcd routines
+#include "glcd.h"
 #include <avr/iom32a.h>
-//#include <avr/io.h>
 #include <avr/interrupt.h>
 #include "ADC.h"
 #include "PWM.h"
@@ -64,7 +62,9 @@ int main(){
 	HC595_Write(Relay_Flags.flags);	
 	GLCD_Init();
 	PWM_Init();
+//#ifndef _CLINIC
 	UART_Init();	
+//#endif //_CLINIC
 	ADC_Init();	
 	TIMER_Init();
 	EEPROM_Init();
@@ -89,9 +89,10 @@ int main(){
 					
 	while(1) {
 		BTN_Check(); //Check button input
-		//this will happen every second
+		//this will happen every second 
 		if (ticker) {
 			PWM_Set();   // Adjust -5V
+
 			if (phase_timer) phase_timer--;
 			if (transition_timer) transition_timer--;
 			if (error_timer) error_timer--;
@@ -101,7 +102,7 @@ int main(){
 				ERROR_Check();
 			}
 			if (!MENU_SCREEN) {
-				MENU_Status_Header2();    
+				MENU_Status_Header2();   
 				MENU_Status();
 			}	
 			// LED heartbeat		

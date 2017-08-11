@@ -2,6 +2,7 @@
 #include <avr\pgmspace.h>
 #include "glcd.h"
 #include "delay.h"
+#include <util/delay.h>
 
 
 GLCD_Config GLCD;
@@ -250,7 +251,10 @@ void GLCD_Init()
     GLCD_Clear();
 	
 	GLCD_GoToLine(3);						
-	GLCD_DisplayString("  ADRONA Crystal"); //this is to initialize display data lines, if you remove this, Buttons will not work!
+	GLCD_DisplayString(" ADRONA Crystal  v1.00"); //this is to initialize display data lines, if you remove this, Buttons will not work!
+	for (uint8_t i = 1; i <255; i++){
+		_delay_ms(10);
+	}
 }
 
 
@@ -482,10 +486,9 @@ void GLCD_DisableDisplayInversion()
 void GLCD_DisplayChar(uint8_t var_lcdData_u8)
 {
     uint8_t dat,*ptr;
+	printf("1  \r\n"); 
 
-
-    if(((GLCD.PageNum == 0x01) && (GLCD.CursorPos>=0x7c)) || (var_lcdData_u8=='\n'))
-    {
+    if(((GLCD.PageNum == 0x01) && (GLCD.CursorPos>=0x7c)) || (var_lcdData_u8=='\n')){
         /* If the cursor has reached to end of line on page1
         OR NewLine command is issued Then Move the cursor to next line */
         GLCD_GoToNextLine();
@@ -498,7 +501,7 @@ void GLCD_DisplayChar(uint8_t var_lcdData_u8)
             if((GLCD.PageNum == 0x00) && (GLCD.CursorPos==0x80))
             {
                 /* If the cursor has reached to end of line on page0
-                     Then Move the cursor to Page1 */
+                     Then Move the cursor to Page1 */			
                 GLCD_GoToPage(1);
             }
 
@@ -506,11 +509,13 @@ void GLCD_DisplayChar(uint8_t var_lcdData_u8)
 
             if(dat==0xff) /* Exit the loop if End of char is encountered */
                 break;
-
+ 
             glcd_DataWrite(dat); /* Display the data and keep track of cursor */
             GLCD.CursorPos++;
         }
+		
     }
+ 
 }
 
 
@@ -1207,7 +1212,9 @@ static void glcd_DataWrite( uint8_t var_data_u8)
  *************************************************************************************************/
 static void glcd_BusyCheck()
 {
+ 
     uint8_t busyflag;
+	uint8_t time_out = 10;
     
 #ifdef GLCD_RW                    //Perform Busy check if GLCD_RW pin is used
 
@@ -1216,6 +1223,8 @@ static void glcd_BusyCheck()
     M_GlcdSetBit(GLCD_RW);             // Select the Read Operation for busy flag by setting RW
     do
     {
+		time_out--;
+		if (!time_out) break;
         M_GlcdClearBit(GLCD_EN);             // Send a High-to-Low Pulse at Enable Pin
         DELAY_us(2);    
         M_GlcdSetBit(GLCD_EN);
@@ -1229,6 +1238,7 @@ static void glcd_BusyCheck()
       to ensure the LCD completes previous operation and ready to receive new commands/data */
     DELAY_ms(1);  
 #endif
+ 
 }
 
 

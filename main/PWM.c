@@ -13,8 +13,10 @@
 #include <stdlib.h>
 #include "uart.h"
 
-static volatile uint16_t PWM_Treshhold = 136;
-const uint16_t fiveVoltADCValue = 460;
+volatile uint16_t PWM_Treshhold = 136;
+const uint16_t fiveVoltADCValue = 480;
+volatile uint16_t PWM_Value = 480;
+
 void PWM_Init()
 {
    /*
@@ -76,12 +78,9 @@ This can be used to control the brightness of LED or Speed of Motor.
 
 void PWM_Set()
 {	
-	static uint16_t ADCValue = 500;
 	static uint8_t NEG_Counter = 0;
 	static uint8_t POZ_Counter = 0;
-	ADCValue = 0.5*ADCValue + 0.5*ADC_Read(1);    //(1-0.2)*temperature.temperatur + 0.2*ADCValue;
-	printf("ADCValue: [%"PRIu16"] \r\n", ADCValue);
-	if (ADCValue > (fiveVoltADCValue+8)) {
+	if (PWM_Value > (fiveVoltADCValue+8)) {
 		POZ_Counter++;
 		NEG_Counter = 0;
 		if (POZ_Counter > 3){
@@ -89,7 +88,7 @@ void PWM_Set()
 			POZ_Counter = 0;
 			OCR0=PWM_Treshhold;	
 		}
-	} else if (ADCValue < (fiveVoltADCValue-8)) {
+	} else if (PWM_Value < (fiveVoltADCValue-8)) {
 		POZ_Counter = 0;
 		NEG_Counter++;
 		if (NEG_Counter > 3){
@@ -98,6 +97,5 @@ void PWM_Set()
 			OCR0=PWM_Treshhold;	
 		}
 	}		
-	printf("PWM_Tresh: [%"PRIu16"] \r\n", PWM_Treshhold);
 }
 

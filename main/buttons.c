@@ -6,6 +6,7 @@
  */ 
 
 #define F_CPU 16000000UL  // 16 MHz
+#include "config.h"
 #include "buttons.h"
 #include <avr/io.h>
 #include <util/delay.h>
@@ -13,7 +14,6 @@
 #include "state.h"
 #include "glcd.h"
 #include "MenuTree.h"
-#include "config.h"
 
 extern volatile STATES State;
 extern volatile COND  Conductivity;
@@ -93,18 +93,14 @@ void BTN_Check(){
 				STATE_Set();			// only state that we set trough button since we check for device status	
 			} else {
 				State = OFF;
-				STATE_Set();		
-				//printf("off  \r\n");		
+				STATE_Set();			
 			}
 
 		break; 
 
 		case PUMPOUT  :
-			//printf("%d 3  \r\n",active_buttons); 
-#ifdef _ULTRAPURE
-			 //   printf("ultrapure \r\n"); 
+#if ( defined(_ULTRAPURE) || defined(_CLINIC))
 			if (!MENU_SCREEN){
-			  //  printf("dispensing \r\n"); 
 				if (State == Dispensing) {
 					State = StandBy;
 					STATE_Set();					
@@ -113,18 +109,21 @@ void BTN_Check(){
 					STATE_Set();
 				}				
 			}
-#endif //_ULTRAPURE			
+#endif //_ULTRAPURE	_CLINIC		
 #ifdef _PURE
 			if (!MENU_SCREEN){
-				State = PUMPOUT;
-				STATE_Set();
+				if (State == PUMPOUT) {
+					State = StandBy;
+					STATE_Set();					
+				} else if (State != OFF){
+					State = PUMPOUT;
+					STATE_Set();
+				}	
 			}
-#endif //_PURE		
-			
+#endif //_PURE			
 		break; 
 				
 		case MENU  :
-			//printf("%d 4  \r\n",active_buttons); 
 			if (MENU_SCREEN){
 				MENU_Out();
 			} else {
@@ -160,7 +159,19 @@ void BTN_Check(){
 //			printf("%d 8  \r\n",active_buttons); 
 			if (MENU_SCREEN){
 				MENU_Up();
-			}			
+			}	
+			
+#ifdef _ULTRAPURE
+			if (!MENU_SCREEN){
+				if (State == PUMPOUT) {
+					State = StandBy;
+					STATE_Set();					
+				} else if (State != OFF){
+					State = PUMPOUT;
+					STATE_Set();
+				}	
+			}
+#endif //_ULTRAPURE			
 		break; 			
 		  
 		default : /* Optional */
