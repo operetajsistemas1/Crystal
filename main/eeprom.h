@@ -18,6 +18,6 @@ void EEPROM_Write_Rec_Time();
 void EEPROM_Write_Rec_Period();
 void EEPROM_Read_Rec_Period();
 void EEPROM_Read_Rec_Time();
-
+void EEPROM_Read_Temperature();
 
 #endif /* EEPROM_H_ */

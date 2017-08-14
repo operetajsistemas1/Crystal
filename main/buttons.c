@@ -138,25 +138,22 @@ void BTN_Check(){
 				tree_node_selected = &calibrate;
 				MENU_Process(0);
 			}			
-			printf("%d 5  \r\n",active_buttons); 
 		break; 				
 				
 		case DOWN  :
-			printf("%d  6 \r\n",active_buttons); 
 			if (MENU_SCREEN){
 				MENU_Down();
 			}
 		break; 		
 				
 		case OK  :
-			printf("%d  7 \r\n",active_buttons); 
 			if (MENU_SCREEN){
 				MENU_In();
 			}		
 		break; 	
 					
 		case UP  :
-//			printf("%d 8  \r\n",active_buttons); 
+
 			if (MENU_SCREEN){
 				MENU_Up();
 			}	
@@ -175,7 +172,7 @@ void BTN_Check(){
 		break; 			
 		  
 		default : /* Optional */
-		printf("%d 9  \r\n",active_buttons); 
+		break;
 	}
 
 

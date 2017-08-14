@@ -38,7 +38,7 @@ ISR(ADC_vect)
 	switch (ADMUX){
 	case 0x40:
 		ADMUX = 0x41;
-		temperature.temperatur = (1-0.1)*temperature.temperatur + 0.1*ADCValue;   //exponential moving average
+		temperature.temperatur = (1-0.2)*temperature.temperatur + 0.2*ADCValue;   //exponential moving average
 		break;
 	case 0x41:
 		ADMUX = 0x40;

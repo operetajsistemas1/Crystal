@@ -23,13 +23,11 @@ void ERROR_Check(){
 	static error_cycle_timer = 0;
 	error_cycle_timer++;
 	if (error_cycle_timer > 5) {
-		printf("Error_Flag  %"PRIu8"  \r\n",Error_Flag);
 		uint8_t i = ++active_error;
 		while (!(Error_Flag&(1<<i))) {
 			i++;
 			if (i>8) i = 0;
 		}		
-		printf("active error  %"PRIu8"  \r\n",i);
 		active_error = i;
 		GLCD_GoToLine(1);
 		GLCD_DisplayString(LCD_Error[i]);	

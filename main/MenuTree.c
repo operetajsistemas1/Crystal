@@ -182,7 +182,6 @@ void MENU_Down(){
 	if (tree_node_selected->child[select] == NULL) {
 		tree_node_selected->selected = 0;
 	}
-	printf("qwe");
 	MENU_Draw();
 }
 
@@ -260,7 +259,6 @@ void MENU_Process(uint8_t button){
 		}
 		switch(process){
 			case 0:
-			printf("0 \r\n");				
 			MENU_SCREEN = 1;
 			GLCD_Clear();				
 			GLCD_GoToLine(0);
@@ -277,9 +275,7 @@ void MENU_Process(uint8_t button){
 			Calibration_Running = 1;
 			break;	
 			
-			case 1:
-				printf("1 \r\n");	
-	
+			case 1:	
 				GLCD_SetCursor(0,3,40);	
 				TEMPERATURE_Display(TEMPERATURE_Calculate());
 						
@@ -293,8 +289,6 @@ void MENU_Process(uint8_t button){
 					GLCD_DisplayString("Use Up and Down buttons");
 					GLCD_GoToLine(7);
 					GLCD_DisplayString("to set temperature");				
-				//	GLCD_SetCursor(1,3,5);
-					//GLCD_Printf("oC");
 					GLCD_SetCursor(0,3,40);
 					TEMPERATURE_Display(temper);
 					process = 2;
@@ -373,9 +367,29 @@ void MENU_Process(uint8_t button){
 			}
 			break;					
 			case 5:	
+					//GLCD_GoToLine(0);
+					//GLCD_DisplayFloatNumber(x1);
+					//GLCD_GoToLine(1);
+					//GLCD_DisplayFloatNumber(x2);	
+					//GLCD_GoToLine(2);
+					//GLCD_DisplayFloatNumber(y1);
+					//GLCD_GoToLine(3);
+					//GLCD_DisplayFloatNumber(y2);				
 					temperature.slope = (y2-y1)/(x2-x1);
-					temperature.offset = y1 - (temperature.slope * x1);									
-					void EEPROM_Write_Temperature();
+					temperature.offset = (float)y1 - (float)(temperature.slope*x1);	
+						
+					//GLCD_GoToLine(0);
+					//GLCD_DisplayFloatNumber(temperature.slope);
+					//GLCD_GoToLine(1);
+					//GLCD_DisplayFloatNumber(temperature.offset);												
+					EEPROM_Write_Temperature();
+					EEPROM_Read_Temperature();
+					//GLCD_GoToLine(6);
+					//GLCD_DisplayFloatNumber(temperature.slope);
+					//GLCD_GoToLine(7);
+					//GLCD_DisplayFloatNumber(temperature.offset);				
+					//
+					//while(1) {}
 					Calibration_Running =0;
 					GLCD_Clear();
 					MENU_SCREEN = 0;
@@ -392,7 +406,6 @@ void MENU_Process(uint8_t button){
 			MENU_Status();
 			MENU_Status_Header(State);
 			MENU_Status_Header2();
-			printf("behav reset filt\r\n");	
 	} else if (tree_node_selected == &units){
 		if (tree_node_selected->selected == 0){
 			MENU_SCREEN = 0;			
@@ -573,7 +586,7 @@ void MENU_Status(){
 			if (!Conductivity.Overflow)	{
 			if (COND_Units == 1){
 				volatile uint32_t resistivity =  COND_Get_Kohm();
-				if (resistivity > 18200) resistivity = 18200;		
+				if (resistivity > 17500) resistivity = 18200;		
 				if (resistivity < 100) {
 					resistivity = 100;	
 					GLCD_SetCursor(0,2,42);
@@ -618,7 +631,7 @@ void MENU_Status(){
 			} else {
 				volatile uint32_t conductivity =  COND_Get_US();	
 			//	printf("%d",conductivity );	
-				if (conductivity < 55) conductivity = 55;	
+				if (conductivity < 65) conductivity = 55;	
 				if (conductivity > 9999) {
 					GLCD_SetCursor(0,2,52);
 					GLCD_DisplayChar32(16);	  // 					

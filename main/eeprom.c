@@ -29,7 +29,6 @@ extern volatile TEMPERATURE temperature;
 void EEPROM_Init(){
 
 	if (eeprom_read_word(&BKP_Magic) == 0x0102){
-		printf("magic true \r\n");	
 		COND_Units = eeprom_read_byte(&BKP_Units);
 		temperature.offset = eeprom_read_float(&BKP_C_Offset);
 		temperature.slope = eeprom_read_float(&BKP_C_Slope);
@@ -68,6 +67,10 @@ void EEPROM_Write_Filter(){
 void EEPROM_Write_Temperature(){
 	eeprom_write_float(&BKP_C_Offset,temperature.offset);		
 	eeprom_write_float(&BKP_C_Slope,temperature.slope);	
+	GLCD_GoToLine(3);
+	GLCD_DisplayFloatNumber(temperature.slope);
+	GLCD_GoToLine(4);
+	GLCD_DisplayFloatNumber(temperature.offset);	
 }
 #ifdef _ULTRAPURE	
 void EEPROM_Write_Rec_Time(){
@@ -83,3 +86,8 @@ void EEPROM_Read_Rec_Time(){
 		Recirculation_Time = eeprom_read_byte(&BKP_Rec_Time) * 60;
 }
 #endif //_ULTRAPURE
+
+void EEPROM_Read_Temperature(){
+		temperature.offset = eeprom_read_float(&BKP_C_Offset);
+		temperature.slope = eeprom_read_float(&BKP_C_Slope);
+}

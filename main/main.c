@@ -87,7 +87,7 @@ int main(){
 	STATE_Init();	
 	COND_Init();
 					
-	while(1) {
+	while(1) {	
 		BTN_Check(); //Check button input
 		//this will happen every second 
 		if (ticker) {

@@ -486,7 +486,6 @@ void GLCD_DisableDisplayInversion()
 void GLCD_DisplayChar(uint8_t var_lcdData_u8)
 {
     uint8_t dat,*ptr;
-	printf("1  \r\n"); 
 
     if(((GLCD.PageNum == 0x01) && (GLCD.CursorPos>=0x7c)) || (var_lcdData_u8=='\n')){
         /* If the cursor has reached to end of line on page1
@@ -810,7 +809,11 @@ void GLCD_DisplayFloatNumber(double var_floatNum_f32)
       2.Display the extracted integer part followed by a decimal point(.).
       3.Later the integer part is made zero by subtracting with the extracted integer value.
       4.Finally the fractional part is multiplied by 100000 to support 6-digit precision */
-
+	if (var_floatNum_f32 < 0){
+		GLCD_DisplayChar('-');
+		var_floatNum_f32 = fabs(var_floatNum_f32);
+	}	
+	
     var_temp_u32 = (uint32_t) var_floatNum_f32;
     GLCD_DisplayDecimalNumber(var_temp_u32,C_GlcdDisplayDefaultDigits_U8);
 
@@ -1223,8 +1226,8 @@ static void glcd_BusyCheck()
     M_GlcdSetBit(GLCD_RW);             // Select the Read Operation for busy flag by setting RW
     do
     {
-		time_out--;
-		if (!time_out) break;
+		//time_out--;
+		//if (!time_out) break;
         M_GlcdClearBit(GLCD_EN);             // Send a High-to-Low Pulse at Enable Pin
         DELAY_us(2);    
         M_GlcdSetBit(GLCD_EN);

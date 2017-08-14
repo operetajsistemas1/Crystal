@@ -15,8 +15,8 @@ uint32_t const t_compensation_table[COMPENSATION_TABLE_SIZE]={86190, 60480, 4343
 //temperature is linear kx+b, where k - slope, b offset
 
 volatile TEMPERATURE temperature = {.temperatur = 240,
-									 .offset = 0, 
-									.slope = 0.75f};
+									 .offset = -40.762, 
+									.slope = 0.996f};
 
 uint16_t getTemperature(TEMPERATURE *temperature){
 	return temperature->temperatur;
@@ -35,8 +35,7 @@ uint16_t TEMPERATURE_Calculate(){
 	uint16_t temp = (temperature.temperatur * temperature.slope) + temperature.offset; 
 	if (temp> 750) temp = 250;
 //	printf("e1 %"PRIu16" \r\n",temp);	
-	//GLCD_GoToLine(1);
-	//GLCD_DisplayFloatNumber(temperature.slope);
+
 	return temp;
 }
 
