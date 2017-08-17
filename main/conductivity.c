@@ -18,8 +18,8 @@
 
 extern uint8_t MENU_SCREEN;
 #ifdef _ULTRAPURE
-	const float GRADE1_OFFSET = 23.088f;
-	const float GRADE1_SLOPE = 1.097f;
+	const float GRADE1_OFFSET = 5.715f;
+	const float GRADE1_SLOPE = 0.612f;
 	const float GRADE2_OFFSET = 23.088f;
 	const float GRADE2_SLOPE = 1.097f;
 #endif //_ULTRAPURE
@@ -70,22 +70,17 @@ ISR(TIMER1_OVF_vect){
 
 ISR(INT1_vect) // grade 2
 {	
-		static uint8_t delay1 = 0;
 		ATOMIC_BLOCK ( ATOMIC_RESTORESTATE ){
 			timer_temp =  TCNT1;
-			TCNT1 = 0;
-			if (timer_temp > 140){  //ignore events shorter than 100 ticks for OpAmp contact bounce 
-				Conductivity.Grade2 = timer_temp;
-				//if ((Conductivity.Grade1/10) < (abs(Conductivity.Grade1 - timer_temp))){
-					//delay1++;
-				//} else {
-					//delay1 = 0;
-				//}				
-				//if ((!delay1) || (delay1>3)){
-					//
-				////	Conductivity.Grade2 = (0.1)*timer_temp + 0.9*Conductivity.Grade2;   //exponential moving average
-					//delay1 = 0;
-				//}				
+			TCNT1 = 0; 
+			
+			if (timer_temp > 140){  //ignore events shorter than 100 ticks for OpAmp contact bounce
+				//if (Conductivity.Timer_Reset_Pending){
+					//Conductivity.Timer_Reset_Pending--;
+					//GIFR |= (1<<INT1); // reset interrupt if it got set already
+					//return;
+				//}
+				Conductivity.Grade2 = (0.1)*timer_temp + 0.9*Conductivity.Grade2;   //exponential moving average
 				dirty_water_counter = 0;
 			} else {
 				dirty_water_counter++;
@@ -107,10 +102,14 @@ ISR(INT0_vect) // grade 1
 			timer_temp =  TCNT1;
 			TCNT1 = 0; 
 			if (timer_temp > 140){  //ignore events shorter than 100 ticks for OpAmp contact bounce
-			Conductivity.Grade1 = timer_temp; 
-
-				//Conductivity.Grade1 = (0.3)*Conductivity.Grade1 + 0.7*timer_temp;   //exponential moving average
-				//dirty_water_counter = 0;
+				//if (Conductivity.Timer_Reset_Pending){
+					//Conductivity.Timer_Reset_Pending--;
+					//GIFR |= (1<<INT0); // reset interrupt if it got set already
+					//return;
+				//}
+			//	printf("Grade1:  [%"PRIu16"] \r\n",timer_temp);
+				Conductivity.Grade1 = (0.3)*Conductivity.Grade1 + 0.7*timer_temp;   //exponential moving average
+				dirty_water_counter = 0;
 			} else {
 				dirty_water_counter++;
 				if (dirty_water_counter > 100){
@@ -120,8 +119,6 @@ ISR(INT0_vect) // grade 1
 			}
 		}
 	Conductivity.Overflow = FALSE;
-	GLCD_SetCursor(0,1,10);
-	GLCD_DisplayDecimalNumber(Conductivity.Grade1,6);
 	GIFR |= (1<<INT0); // reset interrupt if it got set already
 }	
 

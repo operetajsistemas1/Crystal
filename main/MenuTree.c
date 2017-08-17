@@ -587,18 +587,18 @@ void MENU_Status(){
 			if (COND_Units == 1){
 				volatile uint32_t resistivity =  COND_Get_Kohm();
 				if (resistivity > 17500) resistivity = 18200;		
-				if (resistivity < 100) {
-					resistivity = 100;	
+				if (resistivity < 200) {
+					resistivity = 200;	
 					GLCD_SetCursor(0,2,42);
 					GLCD_DisplayChar32(16);						
 					GLCD_SetCursor(0,2,60);
 					GLCD_DisplayChar32(14);	  
 					GLCD_SetCursor(1,2,12);
 					GLCD_DisplayChar32(0);	  
-					GLCD_SetCursor(1,2,28);
+					GLCD_SetCursor(1,2,27);
 					GLCD_DisplayChar32(10);	
 					GLCD_SetCursor(1,2,32);
-					GLCD_DisplayChar32(1);	  
+					GLCD_DisplayChar32(2);	  
 							
 				} else {	
 		
@@ -632,17 +632,17 @@ void MENU_Status(){
 				volatile uint32_t conductivity =  COND_Get_US();	
 			//	printf("%d",conductivity );	
 				if (conductivity < 65) conductivity = 55;	
-				if (conductivity > 9999) {
+				if (conductivity > 5000) {
 					GLCD_SetCursor(0,2,52);
 					GLCD_DisplayChar32(16);	  // 					
 					GLCD_SetCursor(0,2,41);
 					GLCD_DisplayChar32(16);	  // 					
 					GLCD_SetCursor(1,2,1);
-					GLCD_DisplayChar32(13);	  // 
+					GLCD_DisplayChar32(16);	  // 
 					GLCD_SetCursor(1,2,16);
-					GLCD_DisplayChar32(1);	  //
+					GLCD_DisplayChar32(13);	  //
 					GLCD_SetCursor(1,2,32);
-					GLCD_DisplayChar32(0);	  //										
+					GLCD_DisplayChar32(5);	  //										
 				} else {			
 				GLCD_SetCursor(0,2,58);
 				GLCD_DisplayChar32(10);		
