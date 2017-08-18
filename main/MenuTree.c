@@ -589,7 +589,7 @@ void MENU_Status(){
 				if (resistivity > 17500) resistivity = 18200;		
 				if (resistivity < 200) {
 					resistivity = 200;	
-					GLCD_SetCursor(0,2,42);
+					GLCD_SetCursor(0,2,45);
 					GLCD_DisplayChar32(16);						
 					GLCD_SetCursor(0,2,60);
 					GLCD_DisplayChar32(14);	  
@@ -631,7 +631,7 @@ void MENU_Status(){
 			} else {
 				volatile uint32_t conductivity =  COND_Get_US();	
 			//	printf("%d",conductivity );	
-				if (conductivity < 65) conductivity = 55;	
+				if (conductivity < 60) conductivity = 55;	
 				if (conductivity > 5000) {
 					GLCD_SetCursor(0,2,52);
 					GLCD_DisplayChar32(16);	  // 					

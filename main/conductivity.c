@@ -18,8 +18,8 @@
 
 extern uint8_t MENU_SCREEN;
 #ifdef _ULTRAPURE
-	const float GRADE1_OFFSET = 5.715f;
-	const float GRADE1_SLOPE = 0.612f;
+	const float GRADE1_OFFSET = -26.0f;
+	const float GRADE1_SLOPE = 1.73f;
 	const float GRADE2_OFFSET = 23.088f;
 	const float GRADE2_SLOPE = 1.097f;
 #endif //_ULTRAPURE

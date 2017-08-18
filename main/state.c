@@ -107,6 +107,13 @@ void STATE_Check(){
 				State = Running;			
 				STATE_Set();
 			}	
+#ifdef _ULTRAPURE
+			if (Tank_Full()){
+				phase_timer = Recirculation_Period - Recirculation_Time;
+				State = TankFull;
+				STATE_Set();
+			}			
+#endif //_ULTRAPURE
 #ifdef _CLINIC
 			if (Grade2Flow()){
 				COND_Set_Grade1();
