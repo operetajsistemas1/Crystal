@@ -16,14 +16,19 @@
 #define DEBUGG
 
 //Uncomment definition for needed device
-//1. EX TRACE/HPLC/BIO
-#define _ULTRAPURE
+
+//1.EX TRACE/HPLC/BIO
+//#define _ULTRAPURE
+
 //2. EX/7 Pure
 //#define _PURE
+
 //3. EX/7 RO,  Sterifeed
 //#define _RO
+
 //4. Clinic
-//#define _CLINIC
+#define _CLINIC
+
 //5. Doubleflow 
 //#define _DOUBLEFLOW
 

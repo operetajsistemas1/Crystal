@@ -140,7 +140,7 @@ tree_node parent = {
 };
 
 tree_node calibrate = {
-	.parent = NULL,
+	.parent = &parent,
 	.text = "Calibrate Temperature",
 	.selected = 1,
 	.child =
@@ -150,15 +150,25 @@ tree_node calibrate = {
 
 
 tree_node * tree_node_selected = &parent;
+tree_node * prev_tree_node_selected = NULL;
 
 
 
 void MENU_Draw(){
-	GLCD_Clear();
-	GLCD_GoToLine(0);
-	GLCD_DisplayString(tree_node_selected->text);
-	for (volatile uint8_t iter = 0; iter<= 4; iter++ ) {
-		if (tree_node_selected->child[iter] == NULL) continue;
+	static char prev_selected = 9;
+	if (tree_node_selected == prev_tree_node_selected) {
+		GLCD_GoToLine(tree_node_selected->selected + 2);
+		GLCD_EnableDisplayInversion();
+		GLCD_DisplayString(tree_node_selected->child[tree_node_selected->selected]->text);
+		GLCD_DisableDisplayInversion();
+		GLCD_GoToLine(prev_selected + 2);
+		GLCD_DisplayString(tree_node_selected->child[prev_selected]->text);
+	} else {
+		GLCD_Clear();
+		GLCD_GoToLine(0);
+		GLCD_DisplayString(tree_node_selected->text);
+		for (volatile uint8_t iter = 0; iter<= 4; iter++ ) {
+			if (tree_node_selected->child[iter] == NULL) continue;
 			if (iter == tree_node_selected->selected){
 				GLCD_EnableDisplayInversion();
 				GLCD_GoToLine(iter+2);
@@ -169,6 +179,9 @@ void MENU_Draw(){
 				GLCD_DisplayString(tree_node_selected->child[iter]->text);
 			}			
 		}
+	}		
+	prev_tree_node_selected = tree_node_selected;
+	prev_selected = tree_node_selected->selected;
 };	
 
 
@@ -214,13 +227,12 @@ void MENU_Out(){
 		MENU_Process(4);
 		return;
 	}
-	if (tree_node_selected->parent != NULL){
+	if ((tree_node_selected->parent != NULL)){
 		tree_node_selected = tree_node_selected->parent;
-		MENU_Draw();		
-//		UART_Transmit(1);
-		
-	} else {
-//		UART_Transmit(0);
+		MENU_Draw();			
+	} else {	
+		tree_node_selected = &parent;
+		prev_tree_node_selected = NULL;
 		MENU_SCREEN = 0;
 		GLCD_Clear();
 		MENU_Status();
@@ -246,13 +258,14 @@ void MENU_In(){
 
 
 void MENU_Process(uint8_t button){
-//	printf("%s \r\n",tree_node_selected->text);	
-//	printf("[%"PRIu8"] \r\n",button);	
+	prev_tree_node_selected = NULL;
 	if (tree_node_selected == &calibrate){
 		float static y1, x1, y2, x2;
 		if (button==4) {
 			Calibration_Running =0;
 			process = 0;
+			tree_node_selected = &parent;
+			prev_tree_node_selected = NULL;
 			GLCD_Clear();
 			MENU_SCREEN = 0;
 			return;
@@ -366,35 +379,12 @@ void MENU_Process(uint8_t button){
 				break;
 			}
 			break;					
-			case 5:	
-					//GLCD_GoToLine(0);
-					//GLCD_DisplayFloatNumber(x1);
-					//GLCD_GoToLine(1);
-					//GLCD_DisplayFloatNumber(x2);	
-					//GLCD_GoToLine(2);
-					//GLCD_DisplayFloatNumber(y1);
-					//GLCD_GoToLine(3);
-					//GLCD_DisplayFloatNumber(y2);				
+			case 5:				
 					temperature.slope = (y2-y1)/(x2-x1);
-					temperature.offset = (float)y1 - (float)(temperature.slope*x1);	
-						
-					//GLCD_GoToLine(0);
-					//GLCD_DisplayFloatNumber(temperature.slope);
-					//GLCD_GoToLine(1);
-					//GLCD_DisplayFloatNumber(temperature.offset);												
+					temperature.offset = (float)y1 - (float)(temperature.slope*x1);												
 					EEPROM_Write_Temperature();
 					EEPROM_Read_Temperature();
-					//GLCD_GoToLine(6);
-					//GLCD_DisplayFloatNumber(temperature.slope);
-					//GLCD_GoToLine(7);
-					//GLCD_DisplayFloatNumber(temperature.offset);				
-					//
-					//while(1) {}
-					Calibration_Running =0;
-					GLCD_Clear();
-					MENU_SCREEN = 0;
-					process = 0;
-					//return;
+					MENU_Process(4);
 			break;
 		}
 		
@@ -572,78 +562,174 @@ void MENU_Status(){
 	GLCD_SetCursor(0,7,10);
 	TEMPERATURE_Display(TEMPERATURE_Calculate());			
 			
-		if (FILTER_Time_Left>3600){ 
-			if (State==Running) FILTER_Time_Left--;
-			GLCD_SetCursor(1,7,20);
-			GLCD_Printf("%u h   ",(FILTER_Time_Left/3600));	
-			EEPROM_Write_Filter();
-		} else {
-			GLCD_SetCursor(1,7,20);
-			GLCD_Printf("0 h   ");	
-			Error_Flag |= (1 << Filter_Error);   //Ser DI error
-		}			
+	if (FILTER_Time_Left>3600){ 
+		if (State==Running) FILTER_Time_Left--;
+		GLCD_SetCursor(1,7,20);
+		GLCD_Printf("%u h   ",(FILTER_Time_Left/3600));	
+		EEPROM_Write_Filter();
+	} else {
+		GLCD_SetCursor(1,7,20);
+		GLCD_Printf("0 h   ");	
+		Error_Flag |= (1 << Filter_Error);   //Ser DI error
+	}			
 				
-			if (!Conductivity.Overflow)	{
-			if (COND_Units == 1){
-				volatile uint32_t resistivity =  COND_Get_Kohm();
-				if (resistivity > 17500) resistivity = 18200;		
-				if (resistivity < 200) {
-					resistivity = 200;	
-					GLCD_SetCursor(0,2,45);
-					GLCD_DisplayChar32(16);						
-					GLCD_SetCursor(0,2,60);
-					GLCD_DisplayChar32(14);	  
-					GLCD_SetCursor(1,2,12);
-					GLCD_DisplayChar32(0);	  
-					GLCD_SetCursor(1,2,27);
-					GLCD_DisplayChar32(10);	
-					GLCD_SetCursor(1,2,32);
-					GLCD_DisplayChar32(2);	  
+	if (!Conductivity.Overflow)	{
+#if (defined(_CLINIC)|| defined(_RO))
+	if (Conductivity.Current_Grade == 0){
+		if (COND_Units == 1){
+			volatile uint32_t resistivity =  COND_Get_Kohm();	
+			if (resistivity < 10) {
+				resistivity = 10;
+				
+					
+				GLCD_SetCursor(0,2,45);
+				GLCD_DisplayChar32(16);						
+				GLCD_SetCursor(0,2,60);
+				GLCD_DisplayChar32(14);	  
+				GLCD_SetCursor(1,2,12);
+				GLCD_DisplayChar32(0);	  
+				GLCD_SetCursor(1,2,27);
+				GLCD_DisplayChar32(10);	
+				GLCD_SetCursor(1,2,32);
+				GLCD_DisplayChar32(2);	  
 							
-				} else {	
+			} else {	
 		
-					GLCD_SetCursor(1,2,10);
-					GLCD_DisplayChar32(10);	
-					uint8_t digit = resistivity / 10000;
-					resistivity = resistivity % 10000;	
-					if (digit) {
-						GLCD_SetCursor(0,2,42);
-						GLCD_DisplayChar32(digit);	
-					} else {
-						GLCD_SetCursor(0,2,42);
-						GLCD_DisplayChar32(16);	
-					}
-					digit = resistivity / 1000;
-					resistivity = resistivity % 1000;
-					GLCD_SetCursor(0,2,58);
-					GLCD_DisplayChar32(digit);					
-					digit = resistivity / 100;
-					resistivity = resistivity % 100;
-					GLCD_SetCursor(1,2,16);
-					GLCD_DisplayChar32(digit);
-					digit = resistivity / 10;
-					resistivity = resistivity % 10;
-					GLCD_SetCursor(1,2,32);
-					GLCD_DisplayChar32(digit);				
-				}				
+				GLCD_SetCursor(1,2,10);
+				GLCD_DisplayChar32(10);	
+				uint8_t digit = resistivity / 10000;
+				resistivity = resistivity % 10000;	
+				if (digit) {
+					GLCD_SetCursor(0,2,42);
+					GLCD_DisplayChar32(digit);	
+				} else {
+					GLCD_SetCursor(0,2,42);
+					GLCD_DisplayChar32(16);	
+				}
+				digit = resistivity / 1000;
+				resistivity = resistivity % 1000;
+				GLCD_SetCursor(0,2,58);
+				GLCD_DisplayChar32(digit);					
+				digit = resistivity / 100;
+				resistivity = resistivity % 100;
+				GLCD_SetCursor(1,2,16);
+				GLCD_DisplayChar32(digit);
+				digit = resistivity / 10;
+				resistivity = resistivity % 10;
+				GLCD_SetCursor(1,2,32);
+				GLCD_DisplayChar32(digit);				
+			}				
 										
 				
-			} else {
-				volatile uint32_t conductivity =  COND_Get_US();	
-			//	printf("%d",conductivity );	
-				if (conductivity < 60) conductivity = 55;	
-				if (conductivity > 5000) {
-					GLCD_SetCursor(0,2,52);
-					GLCD_DisplayChar32(16);	  // 					
-					GLCD_SetCursor(0,2,41);
-					GLCD_DisplayChar32(16);	  // 					
-					GLCD_SetCursor(1,2,1);
-					GLCD_DisplayChar32(16);	  // 
-					GLCD_SetCursor(1,2,16);
-					GLCD_DisplayChar32(13);	  //
-					GLCD_SetCursor(1,2,32);
-					GLCD_DisplayChar32(5);	  //										
-				} else {			
+		} else {
+			volatile uint32_t conductivity =  COND_Get_US();		
+			if (conductivity > 40000) {
+				GLCD_SetCursor(0,2,52);
+				GLCD_DisplayChar32(16);	  // 					
+				GLCD_SetCursor(0,2,41);
+				GLCD_DisplayChar32(16);	  // 					
+				GLCD_SetCursor(1,2,1);
+				GLCD_DisplayChar32(13);	  // 
+				GLCD_SetCursor(1,2,16);
+				GLCD_DisplayChar32(4);	  //
+				GLCD_SetCursor(1,2,32);
+				GLCD_DisplayChar32(0);	  //										
+			} else {		
+			
+				uint8_t digit = conductivity / 10000;
+				conductivity = conductivity % 10000;
+				if (digit) {
+					GLCD_SetCursor(0,2,42);
+					GLCD_DisplayChar32(digit);	
+				} else {
+					GLCD_SetCursor(0,2,42);
+					GLCD_DisplayChar32(16);	
+				}	
+			//	GLCD_SetCursor(0,2,58);
+			//	GLCD_DisplayChar32(10);		
+				digit = conductivity / 1000;
+				conductivity = conductivity % 1000;
+				GLCD_SetCursor(0,2,0);
+				GLCD_DisplayChar32(digit);	  // change back to digit			
+				digit = conductivity / 100;
+				conductivity = conductivity % 100;	
+				GLCD_SetCursor(1,2,16);
+				GLCD_DisplayChar32(digit);										
+				digit = conductivity / 10;
+				conductivity = conductivity % 10;				
+				GLCD_SetCursor(1,2,32);
+				GLCD_DisplayChar32(digit);				
+					
+			}
+		} 
+		
+		
+		
+		
+		
+		return;
+	}
+#endif //_ CLINIC _RO
+		if (COND_Units == 1){
+			volatile uint32_t resistivity =  COND_Get_Kohm();
+			if (resistivity > 17500) resistivity = 18200;		
+			if (resistivity < 200) {
+				resistivity = 200;	
+				GLCD_SetCursor(0,2,45);
+				GLCD_DisplayChar32(16);						
+				GLCD_SetCursor(0,2,60);
+				GLCD_DisplayChar32(14);	  
+				GLCD_SetCursor(1,2,12);
+				GLCD_DisplayChar32(0);	  
+				GLCD_SetCursor(1,2,27);
+				GLCD_DisplayChar32(10);	
+				GLCD_SetCursor(1,2,32);
+				GLCD_DisplayChar32(2);	  
+							
+			} else {	
+		
+				GLCD_SetCursor(1,2,10);
+				GLCD_DisplayChar32(10);	
+				uint8_t digit = resistivity / 10000;
+				resistivity = resistivity % 10000;	
+				if (digit) {
+					GLCD_SetCursor(0,2,42);
+					GLCD_DisplayChar32(digit);	
+				} else {
+					GLCD_SetCursor(0,2,42);
+					GLCD_DisplayChar32(16);	
+				}
+				digit = resistivity / 1000;
+				resistivity = resistivity % 1000;
+				GLCD_SetCursor(0,2,58);
+				GLCD_DisplayChar32(digit);					
+				digit = resistivity / 100;
+				resistivity = resistivity % 100;
+				GLCD_SetCursor(1,2,16);
+				GLCD_DisplayChar32(digit);
+				digit = resistivity / 10;
+				resistivity = resistivity % 10;
+				GLCD_SetCursor(1,2,32);
+				GLCD_DisplayChar32(digit);				
+			}				
+										
+				
+		} else {
+			volatile uint32_t conductivity =  COND_Get_US();	
+			//printf("%d \r\n",conductivity );	
+			if (conductivity < 55) conductivity = 55;	
+			if (conductivity > 5000) {
+				GLCD_SetCursor(0,2,52);
+				GLCD_DisplayChar32(16);	  // 					
+				GLCD_SetCursor(0,2,41);
+				GLCD_DisplayChar32(16);	  // 					
+				GLCD_SetCursor(1,2,1);
+				GLCD_DisplayChar32(16);	  // 
+				GLCD_SetCursor(1,2,16);
+				GLCD_DisplayChar32(13);	  //
+				GLCD_SetCursor(1,2,32);
+				GLCD_DisplayChar32(5);	  //										
+			} else {			
 				GLCD_SetCursor(0,2,58);
 				GLCD_DisplayChar32(10);		
 				uint8_t digit = conductivity / 1000;
@@ -661,20 +747,20 @@ void MENU_Status(){
 				digit = conductivity;			
 				GLCD_SetCursor(1,2,32);
 				GLCD_DisplayChar32(digit);						
-				}
-			} 
-			}else {
-				GLCD_SetCursor(1,2,32);
-				GLCD_DisplayChar32(15);	
-				GLCD_SetCursor(1,2,16);
-				GLCD_DisplayChar32(15);	
-				GLCD_SetCursor(1,2,0);
-				GLCD_DisplayChar32(15);			
-				GLCD_SetCursor(0,2,50);	
-				GLCD_DisplayChar32(16);			
-				GLCD_SetCursor(0,2,39);	
-				GLCD_DisplayChar32(16);	//white space				
-			}			
+			}
+		} 
+	}else {
+		GLCD_SetCursor(1,2,32);
+		GLCD_DisplayChar32(15);	
+		GLCD_SetCursor(1,2,16);
+		GLCD_DisplayChar32(15);	
+		GLCD_SetCursor(1,2,0);
+		GLCD_DisplayChar32(15);			
+		GLCD_SetCursor(0,2,50);	
+		GLCD_DisplayChar32(16);			
+		GLCD_SetCursor(0,2,39);	
+		GLCD_DisplayChar32(16);	//white space				
+	}			
 }
 
 void MENU_Status_Header(STATES stat){

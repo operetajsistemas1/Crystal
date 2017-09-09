@@ -81,7 +81,9 @@ void BTN_Check(){
 	//UART_Transmit(currentPortState);
 	active_buttons = BTN_Debounce(&buttons, currentPortState);
 //	UART_Transmit(active_buttons);
-
+	if (Calibration_Available){
+		active_buttons &= SLEEP;
+	}
 	switch(active_buttons) {
 		case 0  :
 	//		printf("%d  1 \r\n",active_buttons); 
