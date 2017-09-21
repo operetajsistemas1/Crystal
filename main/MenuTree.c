@@ -578,18 +578,17 @@ void MENU_Status(){
 	if (Conductivity.Current_Grade == 0){
 		if (COND_Units == 1){
 			volatile uint32_t resistivity =  COND_Get_Kohm();	
-			if (resistivity < 10) {
-				resistivity = 10;
-				
-					
+			if (resistivity > 18200) resistivity = 18200;	
+			if (resistivity < 20) {
+				resistivity = 20;		
 				GLCD_SetCursor(0,2,45);
-				GLCD_DisplayChar32(16);						
+				GLCD_DisplayChar32(14);						
 				GLCD_SetCursor(0,2,60);
-				GLCD_DisplayChar32(14);	  
-				GLCD_SetCursor(1,2,12);
 				GLCD_DisplayChar32(0);	  
-				GLCD_SetCursor(1,2,27);
-				GLCD_DisplayChar32(10);	
+				GLCD_SetCursor(1,2,12);
+				GLCD_DisplayChar32(10);	  
+				GLCD_SetCursor(1,2,16);
+				GLCD_DisplayChar32(0);	
 				GLCD_SetCursor(1,2,32);
 				GLCD_DisplayChar32(2);	  
 							
@@ -624,11 +623,11 @@ void MENU_Status(){
 		} else {
 			volatile uint32_t conductivity =  COND_Get_US();		
 			if (conductivity > 40000) {
-				GLCD_SetCursor(0,2,52);
+				GLCD_SetCursor(0,2,51);
 				GLCD_DisplayChar32(16);	  // 					
-				GLCD_SetCursor(0,2,41);
+				GLCD_SetCursor(0,2,40);
 				GLCD_DisplayChar32(16);	  // 					
-				GLCD_SetCursor(1,2,1);
+				GLCD_SetCursor(1,2,0);
 				GLCD_DisplayChar32(13);	  // 
 				GLCD_SetCursor(1,2,16);
 				GLCD_DisplayChar32(4);	  //
@@ -639,27 +638,22 @@ void MENU_Status(){
 				uint8_t digit = conductivity / 10000;
 				conductivity = conductivity % 10000;
 				if (digit) {
-					GLCD_SetCursor(0,2,42);
+					GLCD_SetCursor(0,2,58);
 					GLCD_DisplayChar32(digit);	
 				} else {
-					GLCD_SetCursor(0,2,42);
+					GLCD_SetCursor(0,2,58);
 					GLCD_DisplayChar32(16);	
-				}	
-			//	GLCD_SetCursor(0,2,58);
-			//	GLCD_DisplayChar32(10);		
+				}			
 				digit = conductivity / 1000;
 				conductivity = conductivity % 1000;
-				GLCD_SetCursor(0,2,0);
-				GLCD_DisplayChar32(digit);	  // change back to digit			
+				GLCD_SetCursor(1,2,10);
+				GLCD_DisplayChar32(digit);	  
+				GLCD_SetCursor(1,2,26);
+				GLCD_DisplayChar32(10);			
 				digit = conductivity / 100;
 				conductivity = conductivity % 100;	
-				GLCD_SetCursor(1,2,16);
-				GLCD_DisplayChar32(digit);										
-				digit = conductivity / 10;
-				conductivity = conductivity % 10;				
 				GLCD_SetCursor(1,2,32);
-				GLCD_DisplayChar32(digit);				
-					
+				GLCD_DisplayChar32(digit);																		
 			}
 		} 
 		
@@ -672,7 +666,7 @@ void MENU_Status(){
 #endif //_ CLINIC _RO
 		if (COND_Units == 1){
 			volatile uint32_t resistivity =  COND_Get_Kohm();
-			if (resistivity > 17500) resistivity = 18200;		
+			if (resistivity > 14200) resistivity = 18200;		
 			if (resistivity < 200) {
 				resistivity = 200;	
 				GLCD_SetCursor(0,2,45);
@@ -717,7 +711,7 @@ void MENU_Status(){
 		} else {
 			volatile uint32_t conductivity =  COND_Get_US();	
 			//printf("%d \r\n",conductivity );	
-			if (conductivity < 55) conductivity = 55;	
+			if (conductivity < 70) conductivity = 55;	
 			if (conductivity > 5000) {
 				GLCD_SetCursor(0,2,52);
 				GLCD_DisplayChar32(16);	  // 					

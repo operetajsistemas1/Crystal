@@ -26,8 +26,8 @@ extern uint8_t MENU_SCREEN;
 #endif //_ULTRAPURE
 #ifdef _CLINIC
 	const uint8_t COND_TICK_TRESH = 60;
-	const float GRADE1_OFFSET = 23.088f;   
-	const float GRADE1_SLOPE = 1.097f;		
+	const float GRADE1_OFFSET = -50.0f;   
+	const float GRADE1_SLOPE = 1.84f;		
 	const float GRADE2_OFFSET = -2.1f;	//FIXME
 	const float GRADE2_SLOPE = 0.4f;		//FIXME
 #endif //_CLINIC
@@ -42,7 +42,7 @@ extern uint8_t MENU_SCREEN;
 	const float GRADE2_SLOPE = 1.097f;		
 #endif //_PURE _DOUBLEFLOW
 
-volatile uint16_t timer2_counter = 0;
+volatile uint16_t timer2_counter = 1;
 volatile COND  Conductivity ={.Current_Grade = 1, 
 								.Timer_Reset_Pending=1, 
 								.Grade1 = 0, 
@@ -71,8 +71,6 @@ void COND_Init(void){
 
 ISR(TIMER1_OVF_vect){
 	Conductivity.Overflow = TRUE;
-	//printf("Timer overflow [%"PRIu32"] \r\n",timer2_counter);
-
 }
 
 
@@ -85,17 +83,11 @@ ISR(INT1_vect) // grade 2
 			TCNT1 = 0; 
 			
 			if (timer_temp > COND_TICK_TRESH){  //ignore events shorter than 100 ticks for OpAmp contact bounce
-				//if (Conductivity.Timer_Reset_Pending){
-					//Conductivity.Timer_Reset_Pending--;
-					//GIFR |= (1<<INT1); // reset interrupt if it got set already
-					//return;
-				//}
 				Conductivity.Grade2 = (0.1)*timer_temp + 0.9*Conductivity.Grade2;   //exponential moving average
 				dirty_water_counter = 0;
 			} else {
 				dirty_water_counter++;
 				if (dirty_water_counter > 100){
-				//	printf("Dirty water [%"PRIu8"] \r\n",dirty_water_counter);
 					dirty_water_counter = 0;
 					Conductivity.Grade2 = 0;
 				}
@@ -105,9 +97,7 @@ ISR(INT1_vect) // grade 2
 	GIFR |= (1<<INT1); // reset interrupt if it got set already
 }	
 
-ISR(INT0_vect) // grade 1
-{	
-
+ISR(INT0_vect) {// grade 1
 		ATOMIC_BLOCK ( ATOMIC_RESTORESTATE ){
 			timer_temp =  TCNT1;
 			TCNT1 = 0; 
@@ -134,10 +124,13 @@ ISR(INT0_vect) // grade 1
 
 void COND_Set_Grade1(){
 	static uint8_t first_run = 1;
+	static float a = 0;
 	GICR &= ~(1<<INT1);	 // Disable ext interrupt 0
 	GICR |= (1<<INT0); 
-	if (!first_run){
+	if (first_run){
 		Conductivity.Timer_Reset_Pending =7;
+		GLCD_SetCursor(0,2,0);
+		GLCD_DisplayFloatNumber(a++);
 	}	
 	first_run = 0;
 	Conductivity.Current_Grade = 1;
@@ -153,6 +146,7 @@ void COND_Set_Grade1(){
 			GLCD_SetCursor(0,4,30);
 			GLCD_DisplayChar(' ');	
 	}
+	
 }
 
 void COND_Set_Grade2(){
@@ -196,8 +190,6 @@ uint32_t COND_Get_Kohm(){
 		resist = resist * 18180 / Temperature_Compensate();   //temperature compensation for grade I
 #endif // ULTRAPURE || CLINIC
 	} else {
-		GLCD_SetCursor(0,1,5);
-		GLCD_DisplayDecimalNumber(Conductivity.Grade2,10);
 		if (Conductivity.Grade2 == 0) {
 			return 1;
 		}
@@ -210,10 +202,7 @@ uint32_t COND_Get_Kohm(){
 					printf("Conductivity.Grade21: %"PRIu16"  \r\n",Conductivity.Grade2);
 			resist  = (float)Conductivity.Grade2_Saved * GRADE2_SLOPE + GRADE2_OFFSET;
 		}
-	}			
-
-//	printf("comp out %"PRIu32"  \r\n",Temperature_Compensate());
-//	printf("resist: %"PRIu32"  \r\n",resist);	
+	}
 	return resist;		
 }
 
