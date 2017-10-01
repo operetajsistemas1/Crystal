@@ -126,6 +126,7 @@ void GLCD_DisplayVerticalGraph(uint8_t var_barGraphNumber_u8, uint8_t var_percen
 void GLCD_DisplayHorizontalGraph(uint8_t var_barGraphNumber_u8, uint8_t var_percentageValue_u8);
 void GLCD_Draw();
 void GLCD_ShowMOhm();
-void GLCD_ShowUS();	
+void GLCD_ShowUS();
+void GLCD_DisplayEOL();
 /**************************************************************************************************/
 #endif

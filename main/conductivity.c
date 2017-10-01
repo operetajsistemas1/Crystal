@@ -127,10 +127,8 @@ void COND_Set_Grade1(){
 	static float a = 0;
 	GICR &= ~(1<<INT1);	 // Disable ext interrupt 0
 	GICR |= (1<<INT0); 
-	if (first_run){
+	if (!first_run){
 		Conductivity.Timer_Reset_Pending =7;
-		GLCD_SetCursor(0,2,0);
-		GLCD_DisplayFloatNumber(a++);
 	}	
 	first_run = 0;
 	Conductivity.Current_Grade = 1;
@@ -172,8 +170,8 @@ void COND_Set_Grade2(){
 	}
 }
 
-uint32_t COND_Get_Kohm(){	
-	float resist = 0;	
+uint32_t COND_Get_Kohm(){
+	float resist = 0;
 	if (Conductivity.Current_Grade == 1){	
 #if defined(_ULTRAPURE) || defined(_CLINIC)
 		if (Conductivity.Grade1 == 0) {
@@ -203,6 +201,7 @@ uint32_t COND_Get_Kohm(){
 			resist  = (float)Conductivity.Grade2_Saved * GRADE2_SLOPE + GRADE2_OFFSET;
 		}
 	}
+	printf("Timer_Reset_Pending: %"PRIu8"  \r\n",Conductivity.Timer_Reset_Pending);
 	return resist;		
 }
 

@@ -9,7 +9,7 @@
 #ifndef STATE_H_
 #define STATE_H_
 
-
+#include "state.h"
 
 typedef enum {
 	OFF = 0,
@@ -27,7 +27,10 @@ typedef enum {
 void STATE_Init();
 void STATE_Check();
 void STATE_Set_On();
-
 void STATE_Set();
+
+#ifdef _CLINIC
+void STATE_Grade2Flow();
+#endif //_CLINIC
 
 #endif /* STATE_H_ */

@@ -52,13 +52,7 @@ void STATE_Check(){
 				STATE_Set();
 			}	
 #ifdef _CLINIC
-			if (Grade2Flow()){
-				COND_Set_Grade1();
-				MENU_Status_Header(Dispensing);
-			} else {
-				COND_Set_Grade2();
-				MENU_Status_Header(StandBy);				
-			}	
+			STATE_Grade2Flow();
 #endif //_CLINIC
 		break;		
 		case Running:
@@ -80,13 +74,7 @@ void STATE_Check(){
 				ERROR_Check_Grade();
 			}
 #ifdef _CLINIC
-			if (Grade2Flow()){
-				COND_Set_Grade1();
-				MENU_Status_Header(Dispensing);
-			} else {
-				COND_Set_Grade2();
-				MENU_Status_Header(Running);				
-			}	
+			STATE_Grade2Flow();
 #endif //_CLINIC
 		break;
 #ifdef _ULTRAPURE
@@ -104,32 +92,26 @@ void STATE_Check(){
 		break;
 		case LowPress:
 			if (!Low_Pressure()){
-				State = Running;			
+				State = Running;
 				STATE_Set();
-			}	
+			}
 #ifdef _ULTRAPURE
 			if (Tank_Full()){
 				phase_timer = Recirculation_Period - Recirculation_Time;
 				State = TankFull;
 				STATE_Set();
-			}			
+			}
 #endif //_ULTRAPURE
 #ifdef _CLINIC
-			if (Grade2Flow()){
-				COND_Set_Grade1();
-				MENU_Status_Header(Dispensing);
-			} else {
-				COND_Set_Grade2();
-				MENU_Status_Header(LowPress);				
-			}	
-#endif //_CLINIC	
+			STATE_Grade2Flow();
+#endif //_CLINIC
 		break;
 		case TankFull:
 			if (!Tank_Full()){
 				if (!transition_timer) {
-					State = Running;			
+					State = Running;
 					STATE_Set();
-				}				
+				}
 			} else {
 				transition_timer = 10;
 			}
@@ -138,23 +120,17 @@ void STATE_Check(){
 				State = Recirculation;
 				STATE_Set();
 			}
-#endif //_ULTRAPURE	
+#endif //_ULTRAPURE
 #ifdef _CLINIC
-			if (Grade2Flow()){
-				COND_Set_Grade1();
-				MENU_Status_Header(Dispensing);
-			} else {
-				COND_Set_Grade2();
-				MENU_Status_Header(TankFull);				
-			}	
-#endif //_CLINIC		
-		break;		
+			STATE_Grade2Flow();
+#endif //_CLINIC
+		break;
 		case TankPump:
 			if (!phase_timer){
 				State = StandBy;
 				STATE_Set();
 			}
-		break;		
+		break;
 		case PostFill:
 			if (!transition_timer){
 				if (Tank_Full()) {
@@ -165,25 +141,17 @@ void STATE_Check(){
 				STATE_Set();
 			}
 #ifdef _CLINIC
-			if (Grade2Flow()){
-				COND_Set_Grade1();
-				MENU_Status_Header(Dispensing);
-			} else {
-				COND_Set_Grade2();
-				MENU_Status_Header(Running);				
-			}	
+			STATE_Grade2Flow();
 #endif //_CLINIC
 		break;
 		default:
-		
-		break;		
+		break;
 	}
 	
 };
 
 
-
-void STATE_Set(){ 		
+void STATE_Set(){
 	switch (State){
 		case OFF:
 			HC595_Clear_Output();
@@ -268,3 +236,24 @@ void STATE_Set(){
 	
 };
 
+
+
+/*
+* Method for Clinic to check if grade 2 flow sensor is active and set
+* 1. Display output
+* 2. Conductivity sensor
+*/
+#ifdef _CLINIC
+void STATE_Grade2Flow() {
+	static uint8_t grade2Flow_active = 0;
+	if (Grade2Flow() & !grade2Flow_active){
+		grade2Flow_active = 1; 
+		COND_Set_Grade1();
+		MENU_Status_Header(Dispensing);
+	} else  if (!Grade2Flow() & grade2Flow_active){
+		grade2Flow_active = 0;
+		COND_Set_Grade2();
+		MENU_Status_Header(Running);
+	}
+}
+#endif //_CLINIC

@@ -1262,8 +1262,7 @@ static void glcd_SelectPage0()
  }
 
 
-void GLCD_DisplayChar32(uint8_t var_lcdData_u8)
-{
+void GLCD_DisplayChar32(uint8_t var_lcdData_u8){
     uint8_t dat,*ptr;
 	uint8_t curPos = GLCD.CursorPos;
 	uint8_t lineNum = GLCD.LineNum;
@@ -1310,6 +1309,22 @@ void GLCD_DisplayChar32(uint8_t var_lcdData_u8)
 				glcd_CmdWrite(lineNum);		
 		}	
         }
+}
+
+void GLCD_DisplayEOL(){
+	const uint8_t horizontal_line = 0b00000000;
+	while (GLCD.CursorPos<=0x7f){
+		glcd_DataWrite(horizontal_line); /* Display the data and keep track of cursor */
+		GLCD.CursorPos++;
+		if (GLCD.CursorPos==0x7f){
+			glcd_DataWrite(horizontal_line); /* Display the data and keep track of cursor */
+			if (GLCD.PageNum == 0x00) {
+				GLCD_GoToPage(1);
+			} else {
+				return 0;
+			}
+		}
+	}
 }
 
 void GLCD_ShowUS(){

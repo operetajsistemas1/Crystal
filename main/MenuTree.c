@@ -49,7 +49,7 @@ extern volatile COND  Conductivity;
 extern tree_node resetfilter;
 tree_node reset = {
 	.parent = &resetfilter,
-	.text = "Reset\0",
+	.text = " Reset                 \0",
 	.selected = 1,
 	.child =
 	{ NULL, NULL, NULL, NULL, NULL}
@@ -60,14 +60,14 @@ tree_node reset = {
 extern tree_node units;
 tree_node usiemens = {
 	.parent = &units,
-	.text = "uS\0",
+	.text = " uS\0",
 	.selected = 1,
 	.child =
 	{ NULL, NULL, NULL, NULL, NULL}
 };
 tree_node mohm = {
 	.parent = &units,
-	.text = "MOhm\0",
+	.text = " MOhm\0",
 	.selected = 0,
 	.child =
 	{ NULL, NULL, NULL, NULL, NULL}
@@ -79,14 +79,14 @@ extern tree_node params;
 #ifdef _ULTRAPURE
 tree_node recper = {
 	.parent = &params,
-	.text = "Recirculation period\0",
+	.text = " Recirculation period\0",
 	.selected = 1,
 	.child =
 	{ NULL, NULL, NULL, NULL, NULL}
 };
 tree_node rectime = {
 	.parent = &params,
-	.text = "Recirculation time\0",
+	.text = " Recirculation time\0",
 	.selected = 0,
 	.child =
 	{ NULL, NULL, NULL, NULL, NULL}
@@ -94,19 +94,17 @@ tree_node rectime = {
 #endif //_ULTRAPURE
 tree_node units = {
 	.parent = &params,
-	.text = "Measurement units\0",
+	.text = " Measurement units\0",
 	.selected = 0,
 	.child =
 	{ &usiemens, &mohm, NULL, NULL, NULL}
 };
 
-
-
 extern tree_node parent; // define that we will have such parent reference
 #ifdef _ULTRAPURE
 tree_node params = {
 	.parent = &parent,
-	.text = "Options \0",
+	.text = " Options\0",
 	.selected = 0,
 	.child =
 	{ &units, &recper, &rectime, NULL}//  { &units, &timedate, &recirc, &logint, NULL}
@@ -114,7 +112,7 @@ tree_node params = {
 #else 
 tree_node params = {
 	.parent = &parent,
-	.text = "Options \0",
+	.text = " Options\0",
 	.selected = 0,
 	.child =
 	{ &units, NULL, NULL, NULL}//  { &units, &timedate, &recirc, &logint, NULL}
@@ -124,7 +122,7 @@ tree_node params = {
 
 tree_node resetfilter = {
 	.parent = &parent,
-	.text = "Reset filter counter \0",
+	.text = " Reset filter counter\0",
 	.selected = 0,
 	.child =
 	{ &reset, NULL, NULL, NULL, NULL}
@@ -133,7 +131,7 @@ tree_node resetfilter = {
 
 tree_node parent = {
 	.parent = NULL,
-	.text = "Main menu \0",
+	.text = " Main menu \0",
 	.selected = 0,
 	.child =
 	{&resetfilter, &params, 0, 0, 0} //{ &voldis, &params, &clerr, &sval, &resetfilter} //{ &voldis, &params, &clerr, &sval, &service}
@@ -141,13 +139,11 @@ tree_node parent = {
 
 tree_node calibrate = {
 	.parent = &parent,
-	.text = "Calibrate Temperature",
+	.text = " Calibrate Temperature",
 	.selected = 1,
 	.child =
 	{ NULL, NULL, NULL, NULL, NULL}
 };
-
-
 
 tree_node * tree_node_selected = &parent;
 tree_node * prev_tree_node_selected = NULL;
@@ -157,13 +153,18 @@ tree_node * prev_tree_node_selected = NULL;
 void MENU_Draw(){
 	static char prev_selected = 9;
 	if (tree_node_selected == prev_tree_node_selected) {
+		if (tree_node_selected->selected == prev_selected) return 0;
 		GLCD_GoToLine(tree_node_selected->selected + 2);
 		GLCD_EnableDisplayInversion();
 		GLCD_DisplayString(tree_node_selected->child[tree_node_selected->selected]->text);
+		GLCD_DisplayEOL();
 		GLCD_DisableDisplayInversion();
 		GLCD_GoToLine(prev_selected + 2);
 		GLCD_DisplayString(tree_node_selected->child[prev_selected]->text);
+		GLCD_DisplayEOL();
+		printf("Draw 1\r\n");
 	} else {
+		printf("Draw 2\r\n");
 		GLCD_Clear();
 		GLCD_GoToLine(0);
 		GLCD_DisplayString(tree_node_selected->text);
@@ -173,10 +174,12 @@ void MENU_Draw(){
 				GLCD_EnableDisplayInversion();
 				GLCD_GoToLine(iter+2);
 				GLCD_DisplayString(tree_node_selected->child[iter]->text);
+				GLCD_DisplayEOL();
 				GLCD_DisableDisplayInversion();
 			} else {
 				GLCD_GoToLine(iter+2);
 				GLCD_DisplayString(tree_node_selected->child[iter]->text);
+				GLCD_DisplayEOL();
 			}			
 		}
 	}		
@@ -558,10 +561,10 @@ void MENU_Print_Time(uint16_t value){
 
 
 void MENU_Status(){
-				
+
 	GLCD_SetCursor(0,7,10);
-	TEMPERATURE_Display(TEMPERATURE_Calculate());			
-			
+	TEMPERATURE_Display(TEMPERATURE_Calculate());
+
 	if (FILTER_Time_Left>3600){ 
 		if (State==Running) FILTER_Time_Left--;
 		GLCD_SetCursor(1,7,20);
@@ -571,44 +574,42 @@ void MENU_Status(){
 		GLCD_SetCursor(1,7,20);
 		GLCD_Printf("0 h   ");	
 		Error_Flag |= (1 << Filter_Error);   //Ser DI error
-	}			
-				
+	}
+
 	if (!Conductivity.Overflow)	{
 #if (defined(_CLINIC)|| defined(_RO))
 	if (Conductivity.Current_Grade == 0){
 		if (COND_Units == 1){
-			volatile uint32_t resistivity =  COND_Get_Kohm();	
-			if (resistivity > 18200) resistivity = 18200;	
+			volatile uint32_t resistivity =  COND_Get_Kohm();
+			if (resistivity > 18200) resistivity = 18200;
 			if (resistivity < 20) {
-				resistivity = 20;		
+				resistivity = 20;
 				GLCD_SetCursor(0,2,45);
-				GLCD_DisplayChar32(14);						
+				GLCD_DisplayChar32(14);
 				GLCD_SetCursor(0,2,60);
-				GLCD_DisplayChar32(0);	  
+				GLCD_DisplayChar32(0);
 				GLCD_SetCursor(1,2,12);
-				GLCD_DisplayChar32(10);	  
+				GLCD_DisplayChar32(10);
 				GLCD_SetCursor(1,2,16);
-				GLCD_DisplayChar32(0);	
+				GLCD_DisplayChar32(0);
 				GLCD_SetCursor(1,2,32);
-				GLCD_DisplayChar32(2);	  
-							
-			} else {	
-		
-				GLCD_SetCursor(1,2,10);
-				GLCD_DisplayChar32(10);	
+				GLCD_DisplayChar32(2);
+			} else {
+				GLCD_SetCursor(0,2,10);
+				GLCD_DisplayChar32(10);
 				uint8_t digit = resistivity / 10000;
-				resistivity = resistivity % 10000;	
+				resistivity = resistivity % 10000;
 				if (digit) {
 					GLCD_SetCursor(0,2,42);
-					GLCD_DisplayChar32(digit);	
+					GLCD_DisplayChar32(digit);
 				} else {
 					GLCD_SetCursor(0,2,42);
-					GLCD_DisplayChar32(16);	
+					GLCD_DisplayChar32(16);
 				}
 				digit = resistivity / 1000;
 				resistivity = resistivity % 1000;
 				GLCD_SetCursor(0,2,58);
-				GLCD_DisplayChar32(digit);					
+				GLCD_DisplayChar32(digit);
 				digit = resistivity / 100;
 				resistivity = resistivity % 100;
 				GLCD_SetCursor(1,2,16);
@@ -616,30 +617,29 @@ void MENU_Status(){
 				digit = resistivity / 10;
 				resistivity = resistivity % 10;
 				GLCD_SetCursor(1,2,32);
-				GLCD_DisplayChar32(digit);				
-			}				
-										
-				
+				GLCD_DisplayChar32(digit);
+			}
 		} else {
-			volatile uint32_t conductivity =  COND_Get_US();		
+			volatile uint32_t conductivity =  COND_Get_US();
 			if (conductivity > 40000) {
 				GLCD_SetCursor(0,2,51);
-				GLCD_DisplayChar32(16);	  // 					
+				GLCD_DisplayChar32(16);
 				GLCD_SetCursor(0,2,40);
-				GLCD_DisplayChar32(16);	  // 					
+				GLCD_DisplayChar32(16);
 				GLCD_SetCursor(1,2,0);
-				GLCD_DisplayChar32(13);	  // 
+				GLCD_DisplayChar32(13);
 				GLCD_SetCursor(1,2,16);
-				GLCD_DisplayChar32(4);	  //
+				GLCD_DisplayChar32(4);
 				GLCD_SetCursor(1,2,32);
-				GLCD_DisplayChar32(0);	  //										
-			} else {		
-			
+				GLCD_DisplayChar32(0);
+			} else {
+				GLCD_SetCursor(0,2,42);
+				GLCD_DisplayChar32(16);
 				uint8_t digit = conductivity / 10000;
 				conductivity = conductivity % 10000;
 				if (digit) {
 					GLCD_SetCursor(0,2,58);
-					GLCD_DisplayChar32(digit);	
+					GLCD_DisplayChar32(digit);
 				} else {
 					GLCD_SetCursor(0,2,58);
 					GLCD_DisplayChar32(16);	
